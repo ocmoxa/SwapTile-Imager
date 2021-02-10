@@ -28,7 +28,7 @@ func TestCategoryRepository(t *testing.T) {
 
 	names, err := categoryRepo.List(ctx)
 	test.AssertErrNil(t, err)
-	if !strings.Contains(testName, strings.Join(names, ";")) {
+	if !strings.Contains(strings.Join(names, ";"), testName) {
 		t.Fatal(testName, "not in", names)
 	}
 
@@ -37,7 +37,7 @@ func TestCategoryRepository(t *testing.T) {
 
 	names, err = categoryRepo.List(ctx)
 	test.AssertErrNil(t, err)
-	if strings.Contains(testName, strings.Join(names, ";")) {
+	if strings.Contains(strings.Join(names, ";"), testName) {
 		t.Fatal(testName, "is in", names)
 	}
 }

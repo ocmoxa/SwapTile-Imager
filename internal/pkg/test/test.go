@@ -32,7 +32,7 @@ func InitKVP(t *testing.T) *redis.Pool {
 
 	return &redis.Pool{
 		Dial: func() (redis.Conn, error) {
-			return redis.DialURL("")
+			return redis.DialURL(addr)
 		},
 	}
 }

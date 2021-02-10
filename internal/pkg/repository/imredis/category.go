@@ -2,7 +2,8 @@ package imredis
 
 import (
 	"context"
-	"errors"
+
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -21,13 +22,24 @@ func NewCategoryRepository(kvp *redis.Pool) *CategoryRepository {
 }
 
 func (r CategoryRepository) List(ctx context.Context) (names []string, err error) {
-	return nil, errors.New("unimplemented")
+	kv := r.kvp.Get()
+	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
+
+	return redis.Strings(kv.Do("SMEMBERS", keyCategories))
 }
 
 func (r CategoryRepository) Delete(ctx context.Context, name string) (err error) {
-	return errors.New("unimplemented")
+	kv := r.kvp.Get()
+	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
+
+	_, err = kv.Do("SREM", keyCategories, name)
+	return err
 }
 
 func (r CategoryRepository) Upsert(ctx context.Context, name string) (err error) {
-	return errors.New("unimplemented")
+	kv := r.kvp.Get()
+	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
+
+	_, err = kv.Do("SADD", keyCategories, name)
+	return err
 }
