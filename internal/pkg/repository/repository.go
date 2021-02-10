@@ -2,8 +2,8 @@ package storage
 
 import "context"
 
-// CatergoryStorage stores known category names.
-type CatergoryStorage interface {
+// CatergoryRepository stores known category names.
+type CatergoryRepository interface {
 	// List return all known categories.
 	List(ctx context.Context) (names []string, err error)
 	// Delete deletes a category by the name. If the category doesn't
@@ -13,8 +13,8 @@ type CatergoryStorage interface {
 	Upsert(ctx context.Context, name string) (err error)
 }
 
-// ImageIDStorage stores known image id.
-type ImageIDStorage interface {
+// ImageIDRepository stores known image id.
+type ImageIDRepository interface {
 	// List returns a list of image ids for the given category.
 	List(ctx context.Context, category string, pagination Pagination) (ids []string, err error)
 	// Insert saves new image id to the category. The uniquness of the

@@ -1,3 +1,6 @@
 # github.com/gomodule/redigo v1.8.3
 ## explicit
 github.com/gomodule/redigo/redis
+# github.com/google/uuid v1.2.0
+## explicit
+github.com/google/uuid
