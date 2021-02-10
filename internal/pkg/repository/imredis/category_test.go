@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/repository"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/repository/imredis"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
 
@@ -22,7 +23,7 @@ func TestCategoryRepository(t *testing.T) {
 	ctx := context.Background()
 	testName := uuid.New().String()
 
-	categoryRepo := imredis.NewCategoryRepository(kvp)
+	var categoryRepo repository.CatergoryRepository = imredis.NewCategoryRepository(kvp)
 	err := categoryRepo.Upsert(ctx, testName)
 	test.AssertErrNil(t, err)
 
@@ -38,6 +39,6 @@ func TestCategoryRepository(t *testing.T) {
 	names, err = categoryRepo.List(ctx)
 	test.AssertErrNil(t, err)
 	if strings.Contains(strings.Join(names, ";"), testName) {
-		t.Fatal(testName, "is in", names)
+		t.Fatal(testName, "in", names)
 	}
 }

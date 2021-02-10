@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/repository"
+
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -23,16 +25,15 @@ func NewImageIDRepository(kvp *redis.Pool) *ImageIDRepository {
 func (r ImageIDRepository) List(
 	ctx context.Context,
 	category string,
-	offset int,
-	count int,
+	pagination repository.Pagination,
 ) (ids []string, err error) {
 	return nil, errors.New("unimplemented")
 }
 
-func (r ImageIDRepository) Insert(ctx context.Context, id string) (err error) {
+func (r ImageIDRepository) Insert(ctx context.Context, category string, id string) (err error) {
 	return errors.New("unimplemented")
 }
 
-func (r ImageIDRepository) Delete(ctx context.Context, id string) (err error) {
+func (r ImageIDRepository) Delete(ctx context.Context, category string, id string) (err error) {
 	return errors.New("unimplemented")
 }
