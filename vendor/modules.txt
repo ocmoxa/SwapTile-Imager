@@ -7,6 +7,9 @@ github.com/gomodule/redigo/redis
 # github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
+# github.com/hedhyw/jsoncjson v1.1.0
+## explicit
+github.com/hedhyw/jsoncjson
 # google.golang.org/protobuf v1.25.0
 ## explicit
 google.golang.org/protobuf/encoding/prototext
