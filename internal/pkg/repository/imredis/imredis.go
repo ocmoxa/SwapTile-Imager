@@ -2,5 +2,5 @@
 package imredis
 
 const (
-	keyCategories = "ocmoxa:categories"
+	keyPrefixImageIDs = "ocmoxa:image_ids:"
 )

@@ -1,27 +1,24 @@
+// Package repository holds models and interfaces of the database
+// repositories.
 package repository
 
-import "context"
+import (
+	"context"
 
-// CatergoryRepository stores known category names.
-type CatergoryRepository interface {
-	// List return all known categories.
-	List(ctx context.Context) (names []string, err error)
-	// Delete deletes a category by the name. If the category doesn't
-	// exist, it will return a nil error.
-	Delete(ctx context.Context, name string) (err error)
-	// Upsert updates or inserts a category.
-	Upsert(ctx context.Context, name string) (err error)
-}
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
+)
 
-// ImageIDRepository stores known image id.
-type ImageIDRepository interface {
+// ImageMetaRepository stores known image meta data.
+type ImageMetaRepository interface {
 	// List returns a list of image ids for the given category.
-	List(ctx context.Context, category string, pagination Pagination) (ids []string, err error)
+	List(ctx context.Context, category string, pagination Pagination) (im []IndexedImageMeta, err error)
 	// Insert saves new image id to the category. The uniquness of the
 	// id is not checked.
-	Insert(ctx context.Context, cateogry string, id string) (err error)
+	Insert(ctx context.Context, cateogry string, im imager.ImageMeta) (err error)
 	// Delete deletes image by id from the category.
-	Delete(ctx context.Context, category string, id string) (err error)
+	Delete(ctx context.Context, category string, index int) (err error)
+	// Categories returns a list of known categories.
+	Categories(ctx context.Context) (categories []string, err error)
 }
 
 // Pagination holds query limits.
@@ -30,4 +27,10 @@ type Pagination struct {
 	Limit int
 	// Offset of rows in the result.
 	Offset int
+}
+
+// IndexedImageMeta adds index to image meta information.
+type IndexedImageMeta struct {
+	Index int `json:"index"`
+	imager.ImageMeta
 }

@@ -1,6 +1,8 @@
 CMD:=cmd/imager/main.go
 GOLANGCI_LINT_VER:=v1.36.0
 
+export GOBIN:=$(PWD)/bin
+
 run:
 	go run $(CMD)
 .PHONY: run
@@ -23,6 +25,10 @@ ifeq ($(TEST_IMAGE_REDIS),)
 	@echo "Try: export TEST_IMAGE_REDIS=redis://localhost:6379"
 endif
 .PHONY: test.integration
+
+proto:
+	protoc --go_out=internal/pkg/imager/improto proto/improto.proto
+.PHONY: proto
 
 vendor:
 	go mod tidy
