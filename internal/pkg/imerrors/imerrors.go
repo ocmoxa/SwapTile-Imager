@@ -4,6 +4,23 @@ import (
 	"errors"
 )
 
+// Error is a constant-like error.
+type Error string
+
+func (err Error) Error() string {
+	return string(err)
+}
+
+// NotFoundError wraps error and describes it as not found. Err should
+// not be nil.
+type NotFoundError struct {
+	Err error
+}
+
+func (err NotFoundError) Error() string {
+	return err.Err.Error()
+}
+
 type errorPair struct {
 	main      error
 	secondary error

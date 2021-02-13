@@ -20,10 +20,6 @@ test.unit:
 
 test.integration:
 	go test -tags=integration ./...
-ifeq ($(TEST_IMAGE_REDIS),)
-	@echo "\033[0;33mEnvironment variable TEST_IMAGE_REDIS not set. Some tests were skipped.\033[0m"
-	@echo "Try: export TEST_IMAGE_REDIS=redis://localhost:6379"
-endif
 .PHONY: test.integration
 
 proto:

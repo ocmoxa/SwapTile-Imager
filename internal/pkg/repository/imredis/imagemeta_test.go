@@ -8,11 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/repository"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/repository/imredis"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
+
+	"github.com/google/uuid"
 )
 
 func TestImageIDRepository(t *testing.T) {

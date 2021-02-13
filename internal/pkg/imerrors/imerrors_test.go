@@ -7,6 +7,26 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
 )
 
+func TestError(t *testing.T) {
+	const expMessage = "test error"
+	const err imerrors.Error = expMessage
+
+	if err.Error() != expMessage {
+		t.Fatal("exp", expMessage, "got", err.Error())
+	}
+}
+
+func TestNotFoundError(t *testing.T) {
+	const expMessage = "test error"
+	err := imerrors.NotFoundError{
+		Err: imerrors.Error(expMessage),
+	}
+
+	if err.Error() != expMessage {
+		t.Fatal("exp", expMessage, "got", err.Error())
+	}
+}
+
 func TestErrorPair(t *testing.T) {
 	errFirst := errors.New("first")
 	errSecond := errors.New("second")

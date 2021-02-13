@@ -2,8 +2,9 @@
 package test
 
 import (
-	"os"
 	"testing"
+
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/config"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -16,23 +17,24 @@ func AssertErrNil(t *testing.T, err error) {
 	}
 }
 
+// LoadConfig loads config from the environment variables.
+func LoadConfig(t *testing.T) config.Config {
+	t.Helper()
+
+	cfg, err := config.Load("")
+	AssertErrNil(t, err)
+
+	return cfg
+}
+
 // InitKVP initialized *redis.Pool. It skips test if env variable is not
 // set.
 func InitKVP(t *testing.T) *redis.Pool {
-	const envVar = "TEST_IMAGE_REDIS"
-
 	t.Helper()
-
-	addr := os.Getenv(envVar)
-	if addr == "" {
-		t.Skip("env variable", envVar, "not set")
-
-		return nil
-	}
 
 	return &redis.Pool{
 		Dial: func() (redis.Conn, error) {
-			return redis.DialURL(addr)
+			return redis.DialURL(LoadConfig(t).Redis.Endpoint)
 		},
 	}
 }

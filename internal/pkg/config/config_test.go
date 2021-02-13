@@ -24,16 +24,37 @@ func TestLoad(t *testing.T) {
 	}
 }
 
-func TestLoadDefault(t *testing.T) {
+func TestLoad_Default(t *testing.T) {
 	const expEnvironment = "development"
 
-	cfg, err := config.Load(uuid.New().String())
+	cfg, err := config.Load(config.UseEnv)
+	test.AssertErrNil(t, err)
+
+	if expEnvironment != cfg.Environment {
+		t.Fatal("exp", expEnvironment, "got", cfg.Environment)
+	}
+}
+
+func TestLoad_Environment(t *testing.T) {
+	const envVar = "SWAPTILE_ENVIRONMENT"
+	const expValue = "test"
+
+	test.AssertErrNil(t, os.Setenv(envVar, expValue))
+	defer func() { test.AssertErrNil(t, os.Unsetenv(envVar)) }()
+
+	cfg, err := config.Load(config.UseEnv)
+	test.AssertErrNil(t, err)
+
+	if expValue != cfg.Environment {
+		t.Fatal("exp", expValue, "got", cfg.Environment)
+	}
+}
+
+func TestLoad_FileNotFound(t *testing.T) {
+	_, err := config.Load(uuid.New().String())
 
 	pathErr := &os.PathError{}
-	switch {
-	case !errors.As(err, &pathErr):
+	if !errors.As(err, &pathErr) {
 		t.Fatal(err)
-	case expEnvironment != cfg.Environment:
-		t.Fatal("exp", expEnvironment, "got", cfg.Environment)
 	}
 }

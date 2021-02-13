@@ -11,4 +11,6 @@ type ImageMeta struct {
 	WEBSource string `json:"source"`
 	// MIMEType is an image media type.
 	MIMEType string `json:"mimetype"`
+	// Size of file in bytes.
+	Size int64 `json:"size"`
 }
