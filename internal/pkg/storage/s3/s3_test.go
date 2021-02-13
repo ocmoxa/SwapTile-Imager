@@ -1,3 +1,5 @@
+// +build integration
+
 package s3_test
 
 import (
@@ -9,15 +11,18 @@ import (
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/storage"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/storage/s3"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
 
 	"github.com/google/uuid"
 )
 
-func TestS3Storage(t *testing.T) {
-	storage, err := s3.NewS3Storage(test.LoadConfig(t).S3)
+func TestStorage(t *testing.T) {
+	s, err := s3.NewS3Storage(test.LoadConfig(t).S3)
 	test.AssertErrNil(t, err)
+
+	var storage storage.FileStorage = s
 
 	ctx := context.Background()
 	data := []byte("hello world")
@@ -37,12 +42,13 @@ func TestS3Storage(t *testing.T) {
 
 	gotData := make([]byte, len(data))
 	_, err = r.Read(gotData)
-	if !errors.Is(err, io.EOF) {
+	switch {
+	case !errors.Is(err, io.EOF):
 		t.Fatal(err)
-	}
-
-	if !bytes.Equal(data, gotData) {
+	case !bytes.Equal(data, gotData):
 		t.Fatal("exp", data, "got", gotData)
+	case r.ContentType != im.MIMEType:
+		t.Fatal("exp", im.MIMEType, "got", r.ContentType)
 	}
 
 	err = storage.Delete(ctx, im.ID)

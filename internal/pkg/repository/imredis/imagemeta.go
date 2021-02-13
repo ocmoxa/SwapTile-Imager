@@ -62,6 +62,7 @@ func (r ImageMetaRepository) List(
 			Index:     i + pagination.Offset,
 			ImageMeta: improto.FromImageMeta(imProto),
 		}
+		im[i].Category = category
 	}
 
 	return im, nil
@@ -69,7 +70,6 @@ func (r ImageMetaRepository) List(
 
 func (r ImageMetaRepository) Insert(
 	ctx context.Context,
-	category string,
 	im imager.ImageMeta,
 ) (err error) {
 	kv := r.kvp.Get()
@@ -84,8 +84,8 @@ func (r ImageMetaRepository) Insert(
 
 	_, err = kv.Do(
 		"RPUSH",
-		r.key(category), // Key.
-		imData,          // Element.
+		r.key(im.Category), // Key.
+		imData,             // Element.
 	)
 	if err != nil {
 		return fmt.Errorf("doing rpush: %w", err)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
 
 	"github.com/caarlos0/env/v6"
@@ -19,6 +20,14 @@ type Config struct {
 	Environment string `env:"SWAPTILE_ENVIRONMENT" envDefault:"development"`
 	S3          `json:"s3"`
 	Redis       `json:"redis"`
+	Core        `json:"core"`
+}
+
+type Core struct {
+	ImageContentTypes   []string           `json:"image_content_types" env:"SWAPTILE_CORE_IMAGE_CONTENT_TYPE" envDefault:"image/jpeg"`
+	SupportedImageSizes []imager.ImageSize `json:"supported_image_sizes" env:"SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES" envDefault:"1920×1080,480x360"`
+	// MaxImageSize is in bytes.
+	MaxImageSize int `json:"max_image_size" env:"SWAPTILE_CORE_MAX_IMAGE_SIZE" envDefault:"12582912"`
 }
 
 // S3 storage client config.
@@ -36,8 +45,8 @@ type Redis struct {
 	Endpoint string `json:"endpoint" env:"SWAPTILE_REDIS_ENDPOINT" envDefault:"redis://localhost:6379"`
 }
 
-// Load config from file or environment. The file has the highest
-// priority.
+// Load config from the file or the environment. The file has the
+// highest priority.
 func Load(file string) (cfg Config, err error) {
 	err = env.Parse(&cfg)
 	if err != nil {

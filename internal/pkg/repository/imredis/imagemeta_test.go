@@ -23,43 +23,43 @@ func TestImageIDRepository(t *testing.T) {
 	defer test.DisposeKVP(t, kvp)
 
 	ctx := context.Background()
-	testImageMeta := imager.ImageMeta{
+	im := imager.ImageMeta{
 		ID:        "test_id",
 		Author:    "test_author",
 		WEBSource: "test_websource",
 		MIMEType:  "test_mimetype",
+		Category:  uuid.New().String(),
 	}
-	testCategory := uuid.New().String()
 	pagination := repository.Pagination{
 		Limit:  1000,
 		Offset: 0,
 	}
 
 	var imageIDRepo repository.ImageMetaRepository = imredis.NewImageMetaRepository(kvp)
-	err := imageIDRepo.Insert(ctx, testCategory, testImageMeta)
+	err := imageIDRepo.Insert(ctx, im)
 	test.AssertErrNil(t, err)
 
-	gotImageMetaList, err := imageIDRepo.List(ctx, testCategory, pagination)
+	gotImageMetaList, err := imageIDRepo.List(ctx, im.Category, pagination)
 	test.AssertErrNil(t, err)
 	if len(gotImageMetaList) != 1 {
 		t.Fatal(len(gotImageMetaList))
 	}
 
 	gotImageMeta := gotImageMetaList[0]
-	if !reflect.DeepEqual(testImageMeta, gotImageMeta.ImageMeta) {
-		t.Fatal("exp", testImageMeta, "got", gotImageMeta.ImageMeta)
+	if !reflect.DeepEqual(im, gotImageMeta.ImageMeta) {
+		t.Fatal("exp", im, "got", gotImageMeta.ImageMeta)
 	}
 
 	categories, err := imageIDRepo.Categories(ctx)
 	test.AssertErrNil(t, err)
-	if !strings.Contains(strings.Join(categories, ";"), testCategory) {
-		t.Fatal(testCategory, "not in", categories)
+	if !strings.Contains(strings.Join(categories, ";"), im.Category) {
+		t.Fatal(im.Category, "not in", categories)
 	}
 
-	err = imageIDRepo.Delete(ctx, testCategory, gotImageMeta.Index)
+	err = imageIDRepo.Delete(ctx, im.Category, gotImageMeta.Index)
 	test.AssertErrNil(t, err)
 
-	gotImageMetaList, err = imageIDRepo.List(ctx, testCategory, pagination)
+	gotImageMetaList, err = imageIDRepo.List(ctx, im.Category, pagination)
 	test.AssertErrNil(t, err)
 	if len(gotImageMetaList) != 0 {
 		t.Fatal(len(gotImageMetaList))
@@ -67,7 +67,7 @@ func TestImageIDRepository(t *testing.T) {
 
 	categories, err = imageIDRepo.Categories(ctx)
 	test.AssertErrNil(t, err)
-	if strings.Contains(strings.Join(categories, ";"), testCategory) {
-		t.Fatal(testCategory, "in", categories)
+	if strings.Contains(strings.Join(categories, ";"), im.Category) {
+		t.Fatal(im.Category, "in", categories)
 	}
 }

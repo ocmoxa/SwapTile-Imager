@@ -14,7 +14,7 @@ type ImageMetaRepository interface {
 	List(ctx context.Context, category string, pagination Pagination) (im []IndexedImageMeta, err error)
 	// Insert saves new image id to the category. The uniquness of the
 	// id is not checked.
-	Insert(ctx context.Context, cateogry string, im imager.ImageMeta) (err error)
+	Insert(ctx context.Context, im imager.ImageMeta) (err error)
 	// Delete deletes image by id from the category.
 	Delete(ctx context.Context, category string, index int) (err error)
 	// Categories returns a list of known categories.
