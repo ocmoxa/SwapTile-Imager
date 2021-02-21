@@ -65,7 +65,7 @@ func (s S3Storage) Get(
 	if err != nil {
 		var errResp minio.ErrorResponse
 		if errors.As(err, &errResp) && errResp.Code == errCodeNotFound {
-			return storage.File{}, imerrors.NotFoundError{Err: err}
+			return storage.File{}, imerrors.NewNotFoundError(err)
 		}
 
 		return storage.File{}, fmt.Errorf("s3 getting stat: %w", err)

@@ -11,14 +11,74 @@ func (err Error) Error() string {
 	return string(err)
 }
 
-// NotFoundError wraps error and describes it as not found. Err should
-// not be nil.
-type NotFoundError struct {
+// WrappedError wraps error for adding meaning to it.
+type WrappedError struct {
 	Err error
 }
 
-func (err NotFoundError) Error() string {
+func (err WrappedError) Unwrap() error {
+	return err.Err
+}
+
+func (err WrappedError) Error() string {
 	return err.Err.Error()
+}
+
+// OversizeError means that given err is about something too large.
+type OversizeError struct {
+	WrappedError
+}
+
+// NewOversizeError wraps err and creates OversizeError.
+func NewOversizeError(err error) error {
+	return OversizeError{
+		WrappedError: WrappedError{
+			Err: err,
+		},
+	}
+}
+
+// NotFoundError means that given err is about something not found.
+type NotFoundError struct {
+	WrappedError
+}
+
+// NewNotFoundError wraps err and creates NotFoundError.
+func NewNotFoundError(err error) error {
+	return NotFoundError{
+		WrappedError: WrappedError{
+			Err: err,
+		},
+	}
+}
+
+// UserError means that given err is about bad request or invalid
+// argument.
+type UserError struct {
+	WrappedError
+}
+
+// NewUserError wraps err and creates UserError.
+func NewUserError(err error) error {
+	return UserError{
+		WrappedError: WrappedError{
+			Err: err,
+		},
+	}
+}
+
+// MediaTypeError means that given err is about invalid content type.
+type MediaTypeError struct {
+	WrappedError
+}
+
+// NewMediaTypeError wraps err and creates MediaTypeError.
+func NewMediaTypeError(err error) error {
+	return MediaTypeError{
+		WrappedError: WrappedError{
+			Err: err,
+		},
+	}
 }
 
 type errorPair struct {
@@ -54,4 +114,20 @@ func ErrorPair(main, secondary error) error {
 			secondary: secondary,
 		}
 	}
+}
+
+type temporaryError interface {
+	Temporary() bool
+}
+
+// IsTemporaryError checks that error has Temporary method and it
+// returns true.
+func IsTemporaryError(err error) bool {
+	var errTmp temporaryError
+
+	if errors.As(err, &errTmp) {
+		return errTmp.Temporary()
+	}
+
+	return false
 }

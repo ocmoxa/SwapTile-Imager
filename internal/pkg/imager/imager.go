@@ -9,17 +9,17 @@ import (
 // ImageMeta contains the main information about an image.
 type ImageMeta struct {
 	// ID of the image.
-	ID string `json:"id"`
+	ID string `json:"id" validate:"required,image_id"`
 	// Author of the image.
-	Author string `json:"author"`
+	Author string `json:"author" validate:"required"`
 	// WEBSource is a url to the website with original image.
-	WEBSource string `json:"source"`
+	WEBSource string `json:"source" validate:"required"`
 	// MIMEType is an image media type.
-	MIMEType string `json:"mimetype"`
+	MIMEType string `json:"mimetype" validate:"required"`
 	// Size of file in bytes.
-	Size int64 `json:"size"`
+	Size int64 `json:"size" validate:"required,gt=0"`
 	// Category of the image.
-	Category string `json:"category"`
+	Category string `json:"category" validate:"required,category"`
 }
 
 // ImageSize is a size defined as a string: WIDTHxHEIGHT

@@ -24,9 +24,9 @@ type ImageMetaRepository interface {
 // Pagination holds query limits.
 type Pagination struct {
 	// Limit of rows in the result.
-	Limit int
+	Limit int `validate:"gte=1"`
 	// Offset of rows in the result.
-	Offset int
+	Offset int `validate:"gte=0"`
 }
 
 // IndexedImageMeta adds index to image meta information.

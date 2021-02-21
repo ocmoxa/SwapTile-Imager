@@ -2,8 +2,8 @@
 Image storage  for SwapTile
 
 TODO:
+- delete API.
 - ci/cd.
-- http api.
 - debug api.
 - trace api.
 - repository badges.

@@ -29,7 +29,7 @@ func NewImageMetaRepository(kvp *redis.Pool) *ImageMetaRepository {
 }
 
 func (r ImageMetaRepository) key(category string) string {
-	return keyPrefixImageIDs + ":" + category
+	return keyPrefixImageIDs + category
 }
 
 func (r ImageMetaRepository) List(

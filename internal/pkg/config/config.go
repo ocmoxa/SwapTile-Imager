@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
@@ -21,13 +22,23 @@ type Config struct {
 	S3          `json:"s3"`
 	Redis       `json:"redis"`
 	Core        `json:"core"`
+	Server      `json:"Server"`
+}
+
+type Server struct {
+	Name               string        `env:"SWAPTILE_SERVER_NAME" envDefault:"SwapTile/Imager"`
+	Address            string        `env:"SWAPTILE_SERVER_ADDRESS" envDefault:":8080"`
+	ExposeErrors       bool          `env:"SWAPTILE_SERVER_EXPOSE_ERRORS" envDefault:"false"`
+	ReadTimeout        time.Duration `env:"SWAPTILE_SERVER_READ_TIMEOUT" envDefault:"15s"`
+	WriteTimeout       time.Duration `env:"SWAPTILE_SERVER_WRITE_TIMEOUT" envDefault:"15s"`
+	CacheControlMaxAge time.Duration `env:"SWAPTILE_SERVER_CACHE_CONTROL_MAX_AGE" envDefault:"1h"`
 }
 
 type Core struct {
 	ImageContentTypes   []string           `json:"image_content_types" env:"SWAPTILE_CORE_IMAGE_CONTENT_TYPE" envDefault:"image/jpeg"`
 	SupportedImageSizes []imager.ImageSize `json:"supported_image_sizes" env:"SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES" envDefault:"1920×1080,480x360"`
 	// MaxImageSize is in bytes.
-	MaxImageSize int `json:"max_image_size" env:"SWAPTILE_CORE_MAX_IMAGE_SIZE" envDefault:"12582912"`
+	MaxImageSize int64 `json:"max_image_size" env:"SWAPTILE_CORE_MAX_IMAGE_SIZE" envDefault:"12582912"`
 }
 
 // S3 storage client config.
