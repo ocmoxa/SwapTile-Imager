@@ -2,6 +2,7 @@ package imhttp
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/config"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager/core"
@@ -51,7 +52,7 @@ func NewServer(cfg config.Server, es Essentials) *Server {
 	r.Use(
 		mux.CORSMethodMiddleware(r),
 		middlewareServerHeader(cfg.Name),
-		middlewareCacheControl(cfg.CacheControlMaxAge),
+		middlewareCacheControl(time.Duration(cfg.CacheControlMaxAge)),
 		middlewareLogger(es.Logger),
 		middlewareDump,
 		middlewareRecoverPanic,
@@ -64,8 +65,8 @@ func NewServer(cfg config.Server, es Essentials) *Server {
 			Addr:    cfg.Address,
 			Handler: r,
 
-			ReadTimeout:  cfg.ReadTimeout,
-			WriteTimeout: cfg.WriteTimeout,
+			ReadTimeout:  time.Duration(cfg.ReadTimeout),
+			WriteTimeout: time.Duration(cfg.WriteTimeout),
 		},
 	}
 }

@@ -3,9 +3,11 @@
 package config_test
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/config"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
@@ -56,5 +58,25 @@ func TestLoad_FileNotFound(t *testing.T) {
 	pathErr := &os.PathError{}
 	if !errors.As(err, &pathErr) {
 		t.Fatal(err)
+	}
+}
+
+func TestDuration(t *testing.T) {
+	const expDuration = config.Duration(time.Hour)
+	const dataStr = `{"d1": "1h", "d2": 3600000000000}`
+
+	var data struct {
+		DurationFirst  config.Duration `json:"d1"`
+		DurationSecond config.Duration `json:"d2"`
+	}
+
+	err := json.Unmarshal([]byte(dataStr), &data)
+	test.AssertErrNil(t, err)
+
+	switch {
+	case data.DurationFirst != expDuration:
+		t.Fatal(data.DurationFirst)
+	case data.DurationSecond != expDuration:
+		t.Fatal(data.DurationFirst)
 	}
 }

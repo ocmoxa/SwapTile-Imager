@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"time"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
@@ -18,7 +19,7 @@ const UseEnv = ""
 
 // Config of the application.
 type Config struct {
-	Environment string `env:"SWAPTILE_ENVIRONMENT" envDefault:"development"`
+	Environment string `json:"environment" env:"SWAPTILE_ENVIRONMENT" envDefault:"development"`
 	S3          `json:"s3"`
 	Redis       `json:"redis"`
 	Core        `json:"core"`
@@ -26,12 +27,12 @@ type Config struct {
 }
 
 type Server struct {
-	Name               string        `env:"SWAPTILE_SERVER_NAME" envDefault:"SwapTile/Imager"`
-	Address            string        `env:"SWAPTILE_SERVER_ADDRESS" envDefault:":8080"`
-	ExposeErrors       bool          `env:"SWAPTILE_SERVER_EXPOSE_ERRORS" envDefault:"false"`
-	ReadTimeout        time.Duration `env:"SWAPTILE_SERVER_READ_TIMEOUT" envDefault:"15s"`
-	WriteTimeout       time.Duration `env:"SWAPTILE_SERVER_WRITE_TIMEOUT" envDefault:"15s"`
-	CacheControlMaxAge time.Duration `env:"SWAPTILE_SERVER_CACHE_CONTROL_MAX_AGE" envDefault:"1h"`
+	Name               string   `json:"name" env:"SWAPTILE_SERVER_NAME" envDefault:"SwapTile/Imager"`
+	Address            string   `json:"address" env:"SWAPTILE_SERVER_ADDRESS" envDefault:":8080"`
+	ExposeErrors       bool     `json:"expose_errors" env:"SWAPTILE_SERVER_EXPOSE_ERRORS" envDefault:"false"`
+	ReadTimeout        Duration `json:"read_timeout" env:"SWAPTILE_SERVER_READ_TIMEOUT" envDefault:"15s"`
+	WriteTimeout       Duration `json:"write_timeout" env:"SWAPTILE_SERVER_WRITE_TIMEOUT" envDefault:"15s"`
+	CacheControlMaxAge Duration `json:"cache_control_max_age" env:"SWAPTILE_SERVER_CACHE_CONTROL_MAX_AGE" envDefault:"1h"`
 }
 
 type Core struct {
@@ -59,7 +60,12 @@ type Redis struct {
 // Load config from the file or the environment. The file has the
 // highest priority.
 func Load(file string) (cfg Config, err error) {
-	err = env.Parse(&cfg)
+	err = env.ParseWithFuncs(&cfg, map[reflect.Type]env.ParserFunc{
+		reflect.TypeOf(Duration(time.Nanosecond)): func(v string) (interface{}, error) {
+			d, err := time.ParseDuration(v)
+			return Duration(d), err
+		},
+	})
 	if err != nil {
 		return cfg, fmt.Errorf("parsing environment: %w", err)
 	}
@@ -83,4 +89,31 @@ func Load(file string) (cfg Config, err error) {
 	}
 
 	return cfg, nil
+}
+
+type Duration time.Duration
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	var v interface{}
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+
+	switch value := v.(type) {
+	case float64:
+		*d = Duration(time.Duration(value))
+
+		return nil
+	case string:
+		duration, err := time.ParseDuration(value)
+		if err != nil {
+			return err
+		}
+
+		*d = Duration(duration)
+
+		return nil
+	default:
+		return imerrors.Error("invalid duration type")
+	}
 }

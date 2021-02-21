@@ -18,5 +18,27 @@
     "redis": {
         // SWAPTILE_REDIS_ENDPOINT.
         "endpoint": "redis://localhost:6379"
+    },
+    "core": {
+        // SWAPTILE_CORE_IMAGE_CONTENT_TYPE.
+        "image_content_types": ["image/jpeg"],
+        // SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES.
+        "supported_image_sizes": ["1920×1080", "480x360"],
+        // SWAPTILE_CORE_MAX_IMAGE_SIZE.
+        "max_image_size": 12582912
+    },
+    "server": {
+        // SWAPTILE_SERVER_NAME
+        "name": "SwapTile/Imager",
+        // SWAPTILE_SERVER_ADDRESS
+        "address": ":8080",
+        // SWAPTILE_SERVER_EXPOSE_ERRORS
+        "expose_errors": false,
+        // SWAPTILE_SERVER_READ_TIMEOUT
+        "read_timeout": "15s",
+        // SWAPTILE_SERVER_WRITE_TIMEOUT
+        "write_timeout": "15s",
+        // SWAPTILE_SERVER_CACHE_CONTROL_MAX_AGE
+        "cache_control_max_age": "1h"
     }
 }

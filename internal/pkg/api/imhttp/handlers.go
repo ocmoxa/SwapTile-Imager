@@ -179,8 +179,10 @@ func (h *handlers) repondJSON(ctx context.Context, w http.ResponseWriter, data i
 }
 
 func (h *handlers) respondErr(ctx context.Context, w http.ResponseWriter, err error) {
+	l := zerolog.Ctx(ctx)
+
 	var status int
-	logEvt := zerolog.Ctx(ctx).Warn()
+	logEvt := l.Warn()
 
 	switch {
 	case err == nil:
@@ -207,7 +209,10 @@ func (h *handlers) respondErr(ctx context.Context, w http.ResponseWriter, err er
 	w.WriteHeader(status)
 
 	if h.exposeErrors && err != nil {
-		w.Write([]byte(err.Error()))
+		_, err = w.Write([]byte(err.Error()))
+		if err != nil {
+			l.Warn().Err(err).Msg("writing response")
+		}
 	}
 }
 
