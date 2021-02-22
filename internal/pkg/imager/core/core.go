@@ -8,8 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/disintegration/imaging"
-	"github.com/google/uuid"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/config"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
@@ -17,7 +15,9 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/storage"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
 
+	"github.com/disintegration/imaging"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -29,6 +29,7 @@ const (
 type Core struct {
 	cfg           config.Core
 	repoImageMeta repository.ImageMetaRepository
+	repoImageID   repository.ImageIDRepository
 	fileStorage   storage.FileStorage
 	fileCache     storage.FileCache
 	validate      *validator.Validate
@@ -36,6 +37,7 @@ type Core struct {
 
 type Essentials struct {
 	repository.ImageMetaRepository
+	repository.ImageIDRepository
 	storage.FileStorage
 	storage.FileCache
 	*validator.Validate
@@ -44,6 +46,7 @@ type Essentials struct {
 func NewCore(es Essentials, cfg config.Core) *Core {
 	return &Core{
 		repoImageMeta: es.ImageMetaRepository,
+		repoImageID:   es.ImageIDRepository,
 		fileStorage:   es.FileStorage,
 		fileCache:     es.FileCache,
 		validate:      es.Validate,
@@ -83,6 +86,14 @@ func (c Core) UploadImage(
 		err = fmt.Errorf("validating content-type: %w", err)
 
 		return im, imerrors.NewMediaTypeError(err)
+	}
+
+	ok, err := c.repoImageID.Set(ctx, im.ID)
+	switch {
+	case err != nil:
+		return im, fmt.Errorf("saving id: %w", err)
+	case !ok:
+		return im, imerrors.NewConflictError(imerrors.Error("id already found"))
 	}
 
 	r = io.LimitReader(r, c.cfg.MaxImageSize)

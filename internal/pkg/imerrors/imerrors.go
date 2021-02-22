@@ -81,6 +81,20 @@ func NewMediaTypeError(err error) error {
 	}
 }
 
+// ConflictError means that given err is about entity conflict.
+type ConflictError struct {
+	WrappedError
+}
+
+// NewConflictError wraps err and creates ConflictError.
+func NewConflictError(err error) error {
+	return ConflictError{
+		WrappedError: WrappedError{
+			Err: err,
+		},
+	}
+}
+
 type errorPair struct {
 	main      error
 	secondary error

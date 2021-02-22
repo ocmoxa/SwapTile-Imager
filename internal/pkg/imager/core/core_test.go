@@ -10,7 +10,6 @@ import (
 	"math"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager/core"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
@@ -21,6 +20,7 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
 
 	"github.com/disintegration/imaging"
+	"github.com/google/uuid"
 )
 
 const contentType = "image/jpeg"
@@ -38,14 +38,12 @@ func newTestCore(t *testing.T) (c *core.Core, close func(t *testing.T)) {
 	s3, err := s3.NewS3Storage(cfg.S3)
 	test.AssertErrNil(t, err)
 
-	v, err := validate.New()
-	test.AssertErrNil(t, err)
-
 	c = core.NewCore(core.Essentials{
 		ImageMetaRepository: imredis.NewImageMetaRepository(kvp),
+		ImageIDRepository:   imredis.NewImageIDRepository(kvp),
 		FileStorage:         s3,
 		FileCache:           nil,
-		Validate:            v,
+		Validate:            validate.New(),
 	}, cfg.Core)
 
 	return c, func(t *testing.T) {

@@ -21,6 +21,14 @@ type ImageMetaRepository interface {
 	Categories(ctx context.Context) (categories []string, err error)
 }
 
+// ImageIDRepository saves image ids to ensure uniqueness.
+type ImageIDRepository interface {
+	// Set saves id and returns if it is already used.
+	Set(ctx context.Context, id string) (ok bool, err error)
+	// Delete id.
+	Delete(ctx context.Context, id string) (err error)
+}
+
 // Pagination holds query limits.
 type Pagination struct {
 	// Limit of rows in the result.

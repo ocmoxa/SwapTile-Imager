@@ -11,7 +11,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/disintegration/imaging"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/api/imhttp"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager/core"
@@ -20,6 +19,7 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
 
+	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
@@ -128,23 +128,22 @@ func TestServer(t *testing.T) {
 	s3, err := s3.NewS3Storage(cfg.S3)
 	test.AssertErrNil(t, err)
 
-	v, err := validate.New()
-	test.AssertErrNil(t, err)
-
 	c := core.NewCore(core.Essentials{
 		ImageMetaRepository: imredis.NewImageMetaRepository(kvp),
+		ImageIDRepository:   imredis.NewImageIDRepository(kvp),
 		FileStorage:         s3,
 		FileCache:           nil,
-		Validate:            v,
+		Validate:            validate.New(),
 	}, cfg.Core)
 
-	s := imhttp.NewServer(
-		cfg.Server,
+	s, err := imhttp.NewServer(
 		imhttp.Essentials{
 			Logger: zerolog.New(os.Stdout),
 			Core:   c,
 		},
+		cfg.Server,
 	)
+	test.AssertErrNil(t, err)
 
 	for _, tc := range testCases {
 		tc := tc

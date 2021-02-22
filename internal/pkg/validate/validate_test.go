@@ -3,17 +3,17 @@ package validate_test
 import (
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
+
+	"github.com/google/uuid"
 )
 
 func TestNew(t *testing.T) {
-	v, err := validate.New()
-	test.AssertErrNil(t, err)
+	v := validate.New()
 
-	err = v.Var(uuid.NewString(), "image_id")
+	err := v.Var(uuid.NewString(), "image_id")
 	test.AssertErrNil(t, err)
 
 	err = v.Var("a", "category")

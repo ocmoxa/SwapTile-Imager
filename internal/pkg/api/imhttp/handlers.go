@@ -104,6 +104,8 @@ func (h *handlers) GetImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set(headerContentType, f.ContentType)
+
 	defer func() {
 		cerr := f.Close()
 		if cerr != nil {
@@ -191,6 +193,8 @@ func (h *handlers) respondErr(ctx context.Context, w http.ResponseWriter, err er
 		return
 	case errors.As(err, &imerrors.NotFoundError{}):
 		status = http.StatusNotFound
+	case errors.As(err, &imerrors.ConflictError{}):
+		status = http.StatusConflict
 	case errors.As(err, &imerrors.UserError{}):
 		status = http.StatusBadRequest
 	case errors.As(err, &imerrors.MediaTypeError{}):

@@ -16,7 +16,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestImageIDRepository(t *testing.T) {
+func TestImageMetaRepository(t *testing.T) {
 	t.Parallel()
 
 	kvp := test.InitKVP(t)
@@ -35,11 +35,11 @@ func TestImageIDRepository(t *testing.T) {
 		Offset: 0,
 	}
 
-	var imageIDRepo repository.ImageMetaRepository = imredis.NewImageMetaRepository(kvp)
-	err := imageIDRepo.Insert(ctx, im)
+	var imageMetaRepo repository.ImageMetaRepository = imredis.NewImageMetaRepository(kvp)
+	err := imageMetaRepo.Insert(ctx, im)
 	test.AssertErrNil(t, err)
 
-	gotImageMetaList, err := imageIDRepo.List(ctx, im.Category, pagination)
+	gotImageMetaList, err := imageMetaRepo.List(ctx, im.Category, pagination)
 	test.AssertErrNil(t, err)
 	if len(gotImageMetaList) != 1 {
 		t.Fatal(len(gotImageMetaList))
@@ -50,22 +50,22 @@ func TestImageIDRepository(t *testing.T) {
 		t.Fatal("exp", im, "got", gotImageMeta.ImageMeta)
 	}
 
-	categories, err := imageIDRepo.Categories(ctx)
+	categories, err := imageMetaRepo.Categories(ctx)
 	test.AssertErrNil(t, err)
 	if !strings.Contains(strings.Join(categories, ";"), im.Category) {
 		t.Fatal(im.Category, "not in", categories)
 	}
 
-	err = imageIDRepo.Delete(ctx, im.Category, gotImageMeta.Index)
+	err = imageMetaRepo.Delete(ctx, im.Category, gotImageMeta.Index)
 	test.AssertErrNil(t, err)
 
-	gotImageMetaList, err = imageIDRepo.List(ctx, im.Category, pagination)
+	gotImageMetaList, err = imageMetaRepo.List(ctx, im.Category, pagination)
 	test.AssertErrNil(t, err)
 	if len(gotImageMetaList) != 0 {
 		t.Fatal(len(gotImageMetaList))
 	}
 
-	categories, err = imageIDRepo.Categories(ctx)
+	categories, err = imageMetaRepo.Categories(ctx)
 	test.AssertErrNil(t, err)
 	if strings.Contains(strings.Join(categories, ";"), im.Category) {
 		t.Fatal(im.Category, "in", categories)

@@ -20,10 +20,12 @@ const UseEnv = ""
 // Config of the application.
 type Config struct {
 	Environment string `json:"environment" env:"SWAPTILE_ENVIRONMENT" envDefault:"development"`
-	S3          `json:"s3"`
-	Redis       `json:"redis"`
-	Core        `json:"core"`
-	Server      `json:"Server"`
+	LogLevel    string `json:"loglevel" env:"SWAPTILE_LOGLEVEL" envDefault:"debug"`
+
+	S3     `json:"s3"`
+	Redis  `json:"redis"`
+	Core   `json:"core"`
+	Server `json:"Server"`
 }
 
 type Server struct {
@@ -32,12 +34,13 @@ type Server struct {
 	ExposeErrors       bool     `json:"expose_errors" env:"SWAPTILE_SERVER_EXPOSE_ERRORS" envDefault:"false"`
 	ReadTimeout        Duration `json:"read_timeout" env:"SWAPTILE_SERVER_READ_TIMEOUT" envDefault:"15s"`
 	WriteTimeout       Duration `json:"write_timeout" env:"SWAPTILE_SERVER_WRITE_TIMEOUT" envDefault:"15s"`
-	CacheControlMaxAge Duration `json:"cache_control_max_age" env:"SWAPTILE_SERVER_CACHE_CONTROL_MAX_AGE" envDefault:"1h"`
+	ShutdownTimeout    Duration `json:"shutdown_timeout" env:"SWAPTILE_SERVER_SHUTDOWN_TIMEOUT" envDefault:"5s"`
+	CacheControlMaxAge Duration `json:"cache_control_max_age" env:"SWAPTILE_SERVER_CACHE_CONTROL_MAX_AGE" envDefault:"0"`
 }
 
 type Core struct {
 	ImageContentTypes   []string           `json:"image_content_types" env:"SWAPTILE_CORE_IMAGE_CONTENT_TYPE" envDefault:"image/jpeg"`
-	SupportedImageSizes []imager.ImageSize `json:"supported_image_sizes" env:"SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES" envDefault:"1920×1080,480x360"`
+	SupportedImageSizes []imager.ImageSize `json:"supported_image_sizes" env:"SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES" envDefault:"1920x1080,480x360"`
 	// MaxImageSize is in bytes.
 	MaxImageSize int64 `json:"max_image_size" env:"SWAPTILE_CORE_MAX_IMAGE_SIZE" envDefault:"12582912"`
 }

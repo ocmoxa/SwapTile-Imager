@@ -39,6 +39,7 @@ func TestWrappedErrorDefinitions(t *testing.T) {
 	errUser := imerrors.NewUserError(expErr)
 	errOversize := imerrors.NewOversizeError(expErr)
 	errMediaType := imerrors.NewMediaTypeError(expErr)
+	errConfict := imerrors.NewConflictError(expErr)
 
 	switch {
 	// NotFoundError.
@@ -54,6 +55,8 @@ func TestWrappedErrorDefinitions(t *testing.T) {
 		t.Fatal("exp", errNotFound)
 	case errors.As(errNotFound, &imerrors.MediaTypeError{}):
 		t.Fatal("exp", errNotFound)
+	case errors.As(errNotFound, &imerrors.ConflictError{}):
+		t.Fatal("exp", errNotFound)
 
 	// UserError.
 	case errUser.Error() != expErr.Error():
@@ -67,6 +70,8 @@ func TestWrappedErrorDefinitions(t *testing.T) {
 	case errors.As(errUser, &imerrors.OversizeError{}):
 		t.Fatal("exp", errUser)
 	case errors.As(errUser, &imerrors.MediaTypeError{}):
+		t.Fatal("exp", errUser)
+	case errors.As(errUser, &imerrors.ConflictError{}):
 		t.Fatal("exp", errUser)
 
 	// OversizeError.
@@ -82,6 +87,8 @@ func TestWrappedErrorDefinitions(t *testing.T) {
 		t.Fatal("exp", errOversize)
 	case errors.As(errOversize, &imerrors.MediaTypeError{}):
 		t.Fatal("exp", errOversize)
+	case errors.As(errOversize, &imerrors.ConflictError{}):
+		t.Fatal("exp", errOversize)
 
 	// MediaTypeError.
 	case errMediaType.Error() != expErr.Error():
@@ -96,6 +103,24 @@ func TestWrappedErrorDefinitions(t *testing.T) {
 		t.Fatal("exp", errMediaType)
 	case errors.As(errMediaType, &imerrors.OversizeError{}):
 		t.Fatal("exp", errMediaType)
+	case errors.As(errMediaType, &imerrors.ConflictError{}):
+		t.Fatal("exp", errMediaType)
+
+	// ConflictError.
+	case errConfict.Error() != expErr.Error():
+		t.Fatal("exp", expErr.Error(), "got", errConfict.Error())
+	case errors.Unwrap(errConfict) != expErr:
+		t.Fatal("exp", expErr, "got", errors.Unwrap(errConfict))
+	case !errors.As(errConfict, &imerrors.ConflictError{}):
+		t.Fatal("exp", errConfict)
+	case errors.As(errConfict, &imerrors.NotFoundError{}):
+		t.Fatal("exp", errConfict)
+	case errors.As(errConfict, &imerrors.UserError{}):
+		t.Fatal("exp", errConfict)
+	case errors.As(errConfict, &imerrors.OversizeError{}):
+		t.Fatal("exp", errConfict)
+	case errors.As(errConfict, &imerrors.MediaTypeError{}):
+		t.Fatal("exp", errConfict)
 	}
 
 }

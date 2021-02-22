@@ -9,26 +9,13 @@ import (
 )
 
 // New creates validator.Validate and registers custom parsers.
-func New() (*validator.Validate, error) {
+func New() *validator.Validate {
 	v := validator.New()
 
-	err := v.RegisterValidation("image_id", func(fl validator.FieldLevel) bool {
-		err := v.Var(fl.Field().Interface(), "uuid")
-		return err == nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("registering image_id: %w", err)
-	}
+	v.RegisterAlias("image_id", "uuid")
+	v.RegisterAlias("category", "alphanum")
 
-	err = v.RegisterValidation("category", func(fl validator.FieldLevel) bool {
-		err := v.Var(fl.Field().Interface(), "alphanum")
-		return err == nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("registering category: %w", err)
-	}
-
-	return v, nil
+	return v
 }
 
 // ValidateImageSize checks that image size is supported.

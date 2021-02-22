@@ -29,7 +29,7 @@ func NewImageMetaRepository(kvp *redis.Pool) *ImageMetaRepository {
 }
 
 func (r ImageMetaRepository) key(category string) string {
-	return keyPrefixImageIDs + category
+	return keyPrefixImageMeta + category
 }
 
 func (r ImageMetaRepository) List(
@@ -136,13 +136,13 @@ func (r ImageMetaRepository) Categories(
 	// It is assumed that there will be few categories, up to 100.
 	// Warning: KEYS can block Redis for a significant amount of time
 	// if the number of categories becomes large.
-	categories, err = redis.Strings(kv.Do("KEYS", keyPrefixImageIDs+"*"))
+	categories, err = redis.Strings(kv.Do("KEYS", keyPrefixImageMeta+"*"))
 	if err != nil {
 		return nil, fmt.Errorf("doing keys: %w", err)
 	}
 
 	for i, c := range categories {
-		categories[i] = strings.TrimPrefix(c, keyPrefixImageIDs)
+		categories[i] = strings.TrimPrefix(c, keyPrefixImageMeta)
 	}
 
 	return categories, nil
