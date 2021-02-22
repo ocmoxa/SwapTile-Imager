@@ -1,0 +1,21 @@
+version: "3"
+
+# WARNING!
+# This file is only for development purpose. Do not use it in production.
+
+services:
+  redis:
+    image: redis:latest
+    environment:
+    - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+    - 6379:6379
+  minio:
+    image: minio/minio:latest
+    ports:
+    - "9000:9000"
+    entrypoint: sh
+    command: -c '/usr/bin/minio server /data'
+    environment:
+      MINIO_ACCESS_KEY: minio_key
+      MINIO_SECRET_KEY: minio_secret

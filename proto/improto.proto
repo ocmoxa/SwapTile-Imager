@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package internal.pkg.core.improto;
+
+option go_package = ".;improto";
+
+// ImageMeta contains the main information about an image.
+message ImageMeta {
+	// ID of the image.
+	string id = 1;
+	// Author of the image.
+	string author = 2;
+	// WEBSource is a url to the website with original image.
+	string web_source = 3;
+	// MIMEType is an image media type.
+	string mime_type = 4;
+}
