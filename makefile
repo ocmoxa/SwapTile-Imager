@@ -14,6 +14,10 @@ build:
 test: test.unit test.integration
 .PHONY: test
 
+test.coverage:
+	go test -tags=integration,!integration -covermode=count -coverprofile=coverage.out ./...
+.PHONY: test.coverage
+
 test.unit:
 	go test ./...
 .PHONY: test.unit

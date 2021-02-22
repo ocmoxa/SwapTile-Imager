@@ -3,6 +3,7 @@ package imerrors_test
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
@@ -32,98 +33,44 @@ func TestWrappedError(t *testing.T) {
 	}
 }
 
-func TestWrappedErrorDefinitions(t *testing.T) {
-	const expErr = imerrors.Error("test error")
+func TestSubWrappedErrors(t *testing.T) {
+	const errOriginal = imerrors.Error("test error")
 
-	errNotFound := imerrors.NewNotFoundError(expErr)
-	errUser := imerrors.NewUserError(expErr)
-	errOversize := imerrors.NewOversizeError(expErr)
-	errMediaType := imerrors.NewMediaTypeError(expErr)
-	errConfict := imerrors.NewConflictError(expErr)
+	testCases := []struct {
+		Err error
+		Exp interface{}
+	}{{
+		Err: imerrors.NewUserError(errOriginal),
+		Exp: &imerrors.UserError{},
+	}, {
+		Err: imerrors.NewMediaTypeError(errOriginal),
+		Exp: &imerrors.MediaTypeError{},
+	}, {
+		Err: imerrors.NewNotFoundError(errOriginal),
+		Exp: &imerrors.NotFoundError{},
+	}, {
+		Err: imerrors.NewOversizeError(errOriginal),
+		Exp: &imerrors.OversizeError{},
+	}, {
+		Err: imerrors.NewConflictError(errOriginal),
+		Exp: &imerrors.ConflictError{},
+	}}
 
-	switch {
-	// NotFoundError.
-	case errNotFound.Error() != expErr.Error():
-		t.Fatal("exp", expErr.Error(), "got", errNotFound.Error())
-	case errors.Unwrap(errNotFound) != expErr:
-		t.Fatal("exp", expErr, "got", errors.Unwrap(errNotFound))
-	case !errors.As(errNotFound, &imerrors.NotFoundError{}):
-		t.Fatal("exp", errNotFound)
-	case errors.As(errNotFound, &imerrors.UserError{}):
-		t.Fatal("exp", errNotFound)
-	case errors.As(errNotFound, &imerrors.OversizeError{}):
-		t.Fatal("exp", errNotFound)
-	case errors.As(errNotFound, &imerrors.MediaTypeError{}):
-		t.Fatal("exp", errNotFound)
-	case errors.As(errNotFound, &imerrors.ConflictError{}):
-		t.Fatal("exp", errNotFound)
-
-	// UserError.
-	case errUser.Error() != expErr.Error():
-		t.Fatal("exp", expErr.Error(), "got", errUser.Error())
-	case errors.Unwrap(errUser) != expErr:
-		t.Fatal("exp", expErr, "got", errors.Unwrap(errUser))
-	case !errors.As(errUser, &imerrors.UserError{}):
-		t.Fatal("exp", errUser)
-	case errors.As(errUser, &imerrors.NotFoundError{}):
-		t.Fatal("exp", errUser)
-	case errors.As(errUser, &imerrors.OversizeError{}):
-		t.Fatal("exp", errUser)
-	case errors.As(errUser, &imerrors.MediaTypeError{}):
-		t.Fatal("exp", errUser)
-	case errors.As(errUser, &imerrors.ConflictError{}):
-		t.Fatal("exp", errUser)
-
-	// OversizeError.
-	case errOversize.Error() != expErr.Error():
-		t.Fatal("exp", expErr.Error(), "got", errOversize.Error())
-	case errors.Unwrap(errOversize) != expErr:
-		t.Fatal("exp", expErr, "got", errors.Unwrap(errOversize))
-	case !errors.As(errOversize, &imerrors.OversizeError{}):
-		t.Fatal("exp", errOversize)
-	case errors.As(errOversize, &imerrors.NotFoundError{}):
-		t.Fatal("exp", errOversize)
-	case errors.As(errOversize, &imerrors.UserError{}):
-		t.Fatal("exp", errOversize)
-	case errors.As(errOversize, &imerrors.MediaTypeError{}):
-		t.Fatal("exp", errOversize)
-	case errors.As(errOversize, &imerrors.ConflictError{}):
-		t.Fatal("exp", errOversize)
-
-	// MediaTypeError.
-	case errMediaType.Error() != expErr.Error():
-		t.Fatal("exp", expErr.Error(), "got", errMediaType.Error())
-	case errors.Unwrap(errMediaType) != expErr:
-		t.Fatal("exp", expErr, "got", errors.Unwrap(errMediaType))
-	case !errors.As(errMediaType, &imerrors.MediaTypeError{}):
-		t.Fatal("exp", errMediaType)
-	case errors.As(errMediaType, &imerrors.NotFoundError{}):
-		t.Fatal("exp", errMediaType)
-	case errors.As(errMediaType, &imerrors.UserError{}):
-		t.Fatal("exp", errMediaType)
-	case errors.As(errMediaType, &imerrors.OversizeError{}):
-		t.Fatal("exp", errMediaType)
-	case errors.As(errMediaType, &imerrors.ConflictError{}):
-		t.Fatal("exp", errMediaType)
-
-	// ConflictError.
-	case errConfict.Error() != expErr.Error():
-		t.Fatal("exp", expErr.Error(), "got", errConfict.Error())
-	case errors.Unwrap(errConfict) != expErr:
-		t.Fatal("exp", expErr, "got", errors.Unwrap(errConfict))
-	case !errors.As(errConfict, &imerrors.ConflictError{}):
-		t.Fatal("exp", errConfict)
-	case errors.As(errConfict, &imerrors.NotFoundError{}):
-		t.Fatal("exp", errConfict)
-	case errors.As(errConfict, &imerrors.UserError{}):
-		t.Fatal("exp", errConfict)
-	case errors.As(errConfict, &imerrors.OversizeError{}):
-		t.Fatal("exp", errConfict)
-	case errors.As(errConfict, &imerrors.MediaTypeError{}):
-		t.Fatal("exp", errConfict)
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(reflect.TypeOf(tc.Err).Name(), func(t *testing.T) {
+			switch {
+			case tc.Err.Error() != errOriginal.Error():
+				t.Fatal("exp", tc.Err.Error(), "got", errOriginal.Error())
+			case errors.Unwrap(tc.Err) != errOriginal:
+				t.Fatal("exp", errOriginal, "got", errors.Unwrap(tc.Err))
+			case !errors.As(tc.Err, tc.Exp):
+				t.Fatal("exp", tc.Exp)
+			}
+		})
 	}
-
 }
+
 func TestErrorPair(t *testing.T) {
 	errFirst := errors.New("first")
 	errSecond := errors.New("second")
