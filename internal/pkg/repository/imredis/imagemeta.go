@@ -15,6 +15,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// CategoryNameAll is a name of category with all images.
+const CategoryNameAll = "all"
+
 // ImageMetaRepository implements storage.ImageMetaRepository.
 type ImageMetaRepository struct {
 	kvp *redis.Pool
@@ -82,13 +85,21 @@ func (r ImageMetaRepository) Insert(
 		return fmt.Errorf("marshalling text: %w", err)
 	}
 
-	_, err = kv.Do(
+	p := newPipeline(kv)
+	p.Send("MULTI")
+	p.Send(
 		"RPUSH",
 		r.key(im.Category), // Key.
 		imData,             // Element.
 	)
+	p.Send(
+		"RPUSH",
+		r.key(CategoryNameAll), // Key.
+		imData,                 // Element.
+	)
+	_, err = p.Do("EXEC")
 	if err != nil {
-		return fmt.Errorf("doing rpush: %w", err)
+		return fmt.Errorf("doing exec: %w", err)
 	}
 
 	return err
@@ -114,14 +125,23 @@ func (r ImageMetaRepository) Delete(
 		return nil
 	}
 
-	_, err = kv.Do(
+	p := newPipeline(kv)
+	p.Send("MULTI")
+	p.Send(
 		"LREM",
 		r.key(category), // Key.
 		0,               // Count. Remove all elements equal to element.
 		element,         // Element.
 	)
+	p.Send(
+		"LREM",
+		r.key(CategoryNameAll), // Key.
+		0,                      // Count. Remove all elements equal to element.
+		element,                // Element.
+	)
+	_, err = p.Do("EXEC")
 	if err != nil {
-		return fmt.Errorf("doing lrem: %w", err)
+		return fmt.Errorf("doing exec: %w", err)
 	}
 
 	return err

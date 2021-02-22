@@ -4,7 +4,6 @@ package imredis_test
 
 import (
 	"context"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -41,14 +40,11 @@ func TestImageMetaRepository(t *testing.T) {
 
 	gotImageMetaList, err := imageMetaRepo.List(ctx, im.Category, pagination)
 	test.AssertErrNil(t, err)
-	if len(gotImageMetaList) != 1 {
-		t.Fatal(len(gotImageMetaList))
-	}
+	mustExistsImageMeta(t, gotImageMetaList, im.ID)
 
-	gotImageMeta := gotImageMetaList[0]
-	if !reflect.DeepEqual(im, gotImageMeta.ImageMeta) {
-		t.Fatal("exp", im, "got", gotImageMeta.ImageMeta)
-	}
+	gotImageMetaList, err = imageMetaRepo.List(ctx, imredis.CategoryNameAll, pagination)
+	test.AssertErrNil(t, err)
+	mustExistsImageMeta(t, gotImageMetaList, im.ID)
 
 	categories, err := imageMetaRepo.Categories(ctx)
 	test.AssertErrNil(t, err)
@@ -56,7 +52,7 @@ func TestImageMetaRepository(t *testing.T) {
 		t.Fatal(im.Category, "not in", categories)
 	}
 
-	err = imageMetaRepo.Delete(ctx, im.Category, gotImageMeta.Index)
+	err = imageMetaRepo.Delete(ctx, im.Category, 0)
 	test.AssertErrNil(t, err)
 
 	gotImageMetaList, err = imageMetaRepo.List(ctx, im.Category, pagination)
@@ -69,5 +65,26 @@ func TestImageMetaRepository(t *testing.T) {
 	test.AssertErrNil(t, err)
 	if strings.Contains(strings.Join(categories, ";"), im.Category) {
 		t.Fatal(im.Category, "in", categories)
+	}
+}
+
+func mustExistsImageMeta(
+	t *testing.T,
+	imageMetaList []repository.IndexedImageMeta,
+	id string,
+) {
+	t.Helper()
+
+	var found bool
+	for _, im := range imageMetaList {
+		if im.ID == id {
+			found = true
+
+			break
+		}
+	}
+
+	if !found {
+		t.Fatal(id, "not in", imageMetaList)
 	}
 }

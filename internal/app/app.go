@@ -71,8 +71,10 @@ func runApp(ctx context.Context, l zerolog.Logger, configFile string) (err error
 		ImageMetaRepository: repoImageMeta,
 		ImageIDRepository:   repoImageID,
 		FileStorage:         fileStorage,
-		FileCache:           nil,
 		Validate:            validate,
+
+		// FileCache is disabled.
+		FileCache: nil,
 	}, cfg.Core)
 
 	srv, err := imhttp.NewServer(imhttp.Essentials{
