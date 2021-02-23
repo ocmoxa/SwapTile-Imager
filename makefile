@@ -36,7 +36,7 @@ vendor:
 .PHONY: vendor
 
 lint:
-	./bin/golangci-lint run
+	./bin/golangci-lint run ./internal/... ./docs/... ./cmd/...
 .PHONY: lint
 
 prepare:
