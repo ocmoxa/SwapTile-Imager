@@ -49,7 +49,7 @@ type Core struct {
 type S3 struct {
 	AccessKeyID     string `json:"access_key_id" env:"SWAPTILE_S3_ACCESS_KEY_ID" envDefault:"minio_key"`
 	SecretAccessKey string `json:"secret_access_key" env:"SWAPTILE_S3_SECRET_ACCESS_KEY" envDefault:"minio_secret"`
-	Endpoint        string `json:"endpoint" env:"SWAPTILE_S3_ENDPOINT" envDefault:"localhost:9000"`
+	Endpoint        string `json:"endpoint" env:"SWAPTILE_S3_ENDPOINT" envDefault:"localhost:9001"`
 	Secure          bool   `json:"secure" env:"SWAPTILE_S3_SECURE" envDefault:"false"`
 	Bucket          string `json:"bucket" env:"SWAPTILE_S3_BUCKET" envDefault:"swaptile"`
 	Location        string `json:"location" env:"SWAPTILE_S3_LOCATION" envDefault:"us-east-1"`
@@ -57,7 +57,7 @@ type S3 struct {
 
 // Redis client config.
 type Redis struct {
-	Endpoint string `json:"endpoint" env:"SWAPTILE_REDIS_ENDPOINT" envDefault:"redis://localhost:6379"`
+	Endpoint string `json:"endpoint" env:"SWAPTILE_REDIS_ENDPOINT" envDefault:"redis://localhost:6380"`
 }
 
 // Load config from the file or the environment. The file has the

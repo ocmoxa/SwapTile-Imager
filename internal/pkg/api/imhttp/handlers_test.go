@@ -101,7 +101,7 @@ func TestServer(t *testing.T) {
 		Request: func() *http.Request {
 			return httptest.NewRequest(
 				http.MethodGet,
-				"/api/v1/images/"+imageID+"?size="+string(size),
+				"/api/v1/images/"+imageID+"/"+string(size),
 				nil,
 			)
 		},

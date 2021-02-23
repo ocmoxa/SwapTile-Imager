@@ -95,7 +95,7 @@ func mountPublicAPI(r *mux.Router, h *handlers, cfg config.Server) {
 		Methods(http.MethodGet).
 		HandlerFunc(h.ListImages)
 
-	apiV1.Path("/images/{id}").
+	apiV1.Path("/images/{id}/{size}").
 		Methods(http.MethodGet).
 		HandlerFunc(h.GetImage)
 

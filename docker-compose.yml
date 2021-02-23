@@ -4,18 +4,51 @@ version: "3"
 # This file is only for development purpose. Do not use it in production.
 
 services:
+  imager:
+    build: .
+    restart: always
+    ports:
+    - "8081:8080"
+    environment:
+      SWAPTILE_S3_ENDPOINT: "minio:9000"
+      SWAPTILE_REDIS_ENDPOINT: "redis://redis:6379"
+      SWAPTILE_SERVER_CACHE_CONTROL_MAX_AGE: "1h"
+    depends_on:
+    - redis
+    - minio
+  # Redis stores image metadata.
   redis:
     image: redis:latest
     environment:
     - ALLOW_EMPTY_PASSWORD=yes
     ports:
-    - 6379:6379
+    - 6380:6379
+    volumes:
+    - ./data/redis:/data
+  # Minio stores images.
   minio:
     image: minio/minio:latest
     ports:
-    - "9000:9000"
+    - "9001:9000"
     entrypoint: sh
     command: -c '/usr/bin/minio server /data'
     environment:
       MINIO_ACCESS_KEY: minio_key
       MINIO_SECRET_KEY: minio_secret
+    volumes:
+    - ./data/minio:/data
+  # Nginx caches images.
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+    - "8082:80"
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf
+    - ./data/nginx:/data
+    depends_on:
+    - imager
+    entrypoint:
+    - sh
+    - -c
+    - "mkdir -p /data/nginx/cache && nginx -g 'daemon off;'"

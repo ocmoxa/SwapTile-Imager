@@ -95,7 +95,7 @@ func (h *handlers) GetImage(w http.ResponseWriter, r *http.Request) {
 	l := zerolog.Ctx(ctx)
 
 	id := mux.Vars(r)["id"]
-	size := imager.ImageSize(r.URL.Query().Get("size"))
+	size := imager.ImageSize(mux.Vars(r)["size"])
 
 	f, err := h.core.GetImage(ctx, id, size)
 	if err != nil {
