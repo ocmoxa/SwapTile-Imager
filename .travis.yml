@@ -28,4 +28,4 @@ script:
 - make prepare
 - make lint
 - make test.coverage
-- $GOPATH/bin/goveralls -service=travis-ci -repotoken $COVERALLS_TOKEN
+- $GOPATH/bin/goveralls -coverprofile coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
