@@ -73,7 +73,7 @@ paths:
         in: path
         schema:
           type: string
-          example: 1920x1080
+          example: 1089x1920
         required: true
       responses:
         "200":

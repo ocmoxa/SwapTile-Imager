@@ -12,7 +12,6 @@ metadata.
 
 ```
 docker-compose up
-make run
 ```
 
 # Configuration

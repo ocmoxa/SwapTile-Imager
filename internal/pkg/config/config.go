@@ -40,7 +40,7 @@ type Server struct {
 
 type Core struct {
 	ImageContentTypes   []string           `json:"image_content_types" env:"SWAPTILE_CORE_IMAGE_CONTENT_TYPE" envDefault:"image/jpeg"`
-	SupportedImageSizes []imager.ImageSize `json:"supported_image_sizes" env:"SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES" envDefault:"1920x1080,480x360"`
+	SupportedImageSizes []imager.ImageSize `json:"supported_image_sizes" env:"SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES" envDefault:"1920x1080,480x360,1080x1920,360x480"`
 	// MaxImageSize is in bytes.
 	MaxImageSize int64 `json:"max_image_size" env:"SWAPTILE_CORE_MAX_IMAGE_SIZE" envDefault:"12582912"`
 }
