@@ -14,7 +14,7 @@ notifications:
   email: false
 
 before_install:
-- go get github.com/mattn/goveralls
+- GO111MODULE=off go get github.com/mattn/goveralls
 - docker pull minio/minio:latest
 - docker run -d
   -p 127.0.0.1:9000:9000
