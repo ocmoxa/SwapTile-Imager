@@ -27,8 +27,6 @@ func TestToImageMeta(t *testing.T) {
 }
 
 func TestFromImageMeta(t *testing.T) {
-	t.Parallel()
-
 	exp := &improto.ImageMeta{
 		Id:        "test_id",
 		Author:    "test_author",
