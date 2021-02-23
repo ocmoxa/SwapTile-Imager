@@ -9,8 +9,6 @@ import (
 )
 
 func TestToImageMeta(t *testing.T) {
-	t.Parallel()
-
 	exp := imager.ImageMeta{
 		ID:        "test_id",
 		Author:    "test_author",
@@ -29,8 +27,6 @@ func TestToImageMeta(t *testing.T) {
 }
 
 func TestFromImageMeta(t *testing.T) {
-	t.Parallel()
-
 	exp := &improto.ImageMeta{
 		Id:        "test_id",
 		Author:    "test_author",

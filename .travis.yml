@@ -1,0 +1,31 @@
+language: go
+
+go:
+- "1.16"
+
+services:
+- docker
+- redis
+
+git:
+  depth: 1
+
+notifications:
+  email: false
+
+before_install:
+- GO111MODULE=off go get github.com/mattn/goveralls
+- docker pull minio/minio:latest
+- docker run -d
+  -p 127.0.0.1:9000:9000
+  -e MINIO_ACCESS_KEY=minio_key
+  -e MINIO_SECRET_KEY=minio_secret
+  --entrypoint sh
+  minio/minio
+  -c '/usr/bin/minio server /data'
+
+script:
+- make prepare
+- make lint
+- make test.coverage
+- $GOPATH/bin/goveralls -service=travis-ci -repotoken $COVERALLS_TOKEN
