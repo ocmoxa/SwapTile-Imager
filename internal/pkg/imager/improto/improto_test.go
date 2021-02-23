@@ -9,8 +9,6 @@ import (
 )
 
 func TestToImageMeta(t *testing.T) {
-	t.Parallel()
-
 	exp := imager.ImageMeta{
 		ID:        "test_id",
 		Author:    "test_author",

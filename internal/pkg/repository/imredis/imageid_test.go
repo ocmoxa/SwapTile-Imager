@@ -12,8 +12,6 @@ import (
 )
 
 func TestImageIDRepository(t *testing.T) {
-	t.Parallel()
-
 	kvp := test.InitKVP(t)
 	defer test.DisposeKVP(t, kvp)
 
