@@ -18,5 +18,6 @@ before_install:
 - docker run -d -p 127.0.0.1:80:9000 minio/minio sh -c '/usr/bin/minio server /data'
 
 script:
+- make prepare
 - make lint
 - make test.coverage
