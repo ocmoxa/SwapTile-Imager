@@ -104,7 +104,9 @@ func mountPublicAPI(r *mux.Router, h *handlers, cfg config.Server) {
 		HandlerFunc(h.ListCategories)
 
 	apiV1.Use(
-		middlewareCacheControl(time.Duration(cfg.CacheControlMaxAge)),
+		middlewareCacheControl(
+			time.Duration(cfg.CacheControlMaxAge),
+		),
 	)
 }
 

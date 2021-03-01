@@ -27,5 +27,7 @@ before_install:
 script:
 - make prepare
 - make lint
-- make test.coverage
+- SWAPTILE_S3_ENDPOINT=127.0.0.1:9000
+  SWAPTILE_REDIS_ENDPOINT=redis://localhost:6379
+  make test.coverage
 - $GOPATH/bin/goveralls -coverprofile coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN

@@ -16,10 +16,10 @@ type ImageMeta struct {
 	WEBSource string `json:"source" validate:"required"`
 	// MIMEType is an image media type.
 	MIMEType string `json:"mimetype" validate:"required"`
-	// Size of file in bytes.
-	Size int64 `json:"size" validate:"required,gt=0"`
 	// Category of the image.
 	Category string `json:"category" validate:"required,category"`
+	// Size of file in bytes.
+	Size int64 `json:"-" validate:"required,gt=0"`
 }
 
 // ImageSize is a size defined as a string: WIDTHxHEIGHT

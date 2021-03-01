@@ -32,7 +32,7 @@ type ImageIDRepository interface {
 // Pagination holds query limits.
 type Pagination struct {
 	// Limit of rows in the result.
-	Limit int `validate:"gte=1"`
+	Limit int `validate:"gte=1,lte=200"`
 	// Offset of rows in the result.
 	Offset int `validate:"gte=0"`
 }

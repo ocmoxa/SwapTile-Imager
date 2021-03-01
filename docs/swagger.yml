@@ -142,7 +142,6 @@ components:
       - author
       - source
       - mimetype
-      - size
       - category
       properties:
         id:
@@ -154,7 +153,5 @@ components:
           type: string
         mimetype:
           type: string
-        size:
-          type: integer
         category:
           type: string

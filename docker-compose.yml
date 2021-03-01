@@ -51,4 +51,7 @@ services:
     entrypoint:
     - sh
     - -c
-    - "mkdir -p /data/nginx/cache && nginx -g 'daemon off;'"
+    - "mkdir -p /data/nginx/cache && \
+      mkdir -p /data/nginx/log && \
+      mkdir -p /data/nginx/tmp && \
+      nginx -g 'daemon off;'"
