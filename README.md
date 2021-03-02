@@ -18,5 +18,10 @@ docker-compose up
 
 See [./config.example.jsonc](./config.example.jsonc).
 
+# Requirnments
+
+* Go 1.16
+* libvips-dev
+
 # Documentation
 See [./docs/swagger.yml](./docs/swagger.yml) or browse [http://localhost:8080/swagger/ui](http://localhost:8080/swagger/ui).

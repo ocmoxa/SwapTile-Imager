@@ -27,6 +27,9 @@ github.com/google/uuid
 # github.com/gorilla/mux v1.8.0
 ## explicit
 github.com/gorilla/mux
+# github.com/h2non/bimg v1.1.5
+## explicit
+github.com/h2non/bimg
 # github.com/hedhyw/jsoncjson v1.1.0
 ## explicit
 github.com/hedhyw/jsoncjson

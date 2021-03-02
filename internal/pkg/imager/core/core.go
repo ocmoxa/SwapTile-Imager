@@ -3,10 +3,9 @@ package core
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"sync"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/config"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
@@ -18,6 +17,7 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/h2non/bimg"
 	"github.com/rs/zerolog"
 )
 
@@ -31,15 +31,15 @@ type Core struct {
 	repoImageMeta repository.ImageMetaRepository
 	repoImageID   repository.ImageIDRepository
 	fileStorage   storage.FileStorage
-	fileCache     storage.FileCache
 	validate      *validator.Validate
+
+	buffersPool *sync.Pool
 }
 
 type Essentials struct {
 	repository.ImageMetaRepository
 	repository.ImageIDRepository
 	storage.FileStorage
-	storage.FileCache
 	*validator.Validate
 }
 
@@ -48,9 +48,13 @@ func NewCore(es Essentials, cfg config.Core) *Core {
 		repoImageMeta: es.ImageMetaRepository,
 		repoImageID:   es.ImageIDRepository,
 		fileStorage:   es.FileStorage,
-		fileCache:     es.FileCache,
 		validate:      es.Validate,
 		cfg:           cfg,
+		buffersPool: &sync.Pool{
+			New: func() interface{} {
+				return new(bytes.Buffer)
+			},
+		},
 	}
 }
 
@@ -147,47 +151,34 @@ func (c Core) GetImage(
 		return storage.File{}, imerrors.NewUserError(err)
 	}
 
-	if c.fileCache != nil {
-		f, err = c.fileCache.Get(cacheID)
-		switch {
-		case err == nil:
-			return f, nil
-		case errors.As(err, &imerrors.NotFoundError{}):
-			break
-		default:
-			return storage.File{}, fmt.Errorf("getting file from cache: %w", err)
-		}
-	}
-
 	f, err = c.fileStorage.Get(ctx, id)
 	if err != nil {
 		return storage.File{}, fmt.Errorf("getting image from storage: %w", err)
 	}
 
-	img, err := imaging.Decode(f)
+	buf := c.buffersPool.Get().(*bytes.Buffer)
+	defer c.buffersPool.Put(buf)
+	buf.Reset()
+
+	_, err = buf.ReadFrom(f)
 	if err != nil {
-		return storage.File{}, fmt.Errorf("decoding image: %w", err)
+		return storage.File{}, fmt.Errorf("reading image: %w", err)
 	}
 
-	width, height := size.Size()
-	img = imaging.Fill(img, width, height, imaging.Center, imaging.Lanczos)
+	imgData := buf.Bytes()
 
-	var buf bytes.Buffer
-	err = imaging.Encode(&buf, img, outputImageFormat)
+	width, height := size.Size()
+	img := bimg.NewImage(imgData)
+
+	resizedImgData, err := img.ResizeAndCrop(width, height)
 	if err != nil {
-		return storage.File{}, fmt.Errorf("encoding image: %w", err)
+		return storage.File{}, fmt.Errorf("resizing image: %w", err)
 	}
 
 	f.ContentType = outputImageContentType
-	f.ReadCloser = ioutil.NopCloser(&buf)
+	f.ReadCloser = io.NopCloser(bytes.NewReader(resizedImgData))
 
-	if c.fileCache != nil {
-		if err = c.fileCache.Put(cacheID, f); err != nil {
-			return storage.File{}, fmt.Errorf("putting file to cache: %w", err)
-		}
-	}
-
-	return
+	return f, nil
 }
 
 func (c Core) ListCategories(

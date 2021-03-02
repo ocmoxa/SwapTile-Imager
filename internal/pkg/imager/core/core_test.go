@@ -26,34 +26,35 @@ import (
 const contentType = "image/jpeg"
 const imageSize imager.ImageSize = "128x128"
 
-func newTestCore(t *testing.T) (c *core.Core, close func(t *testing.T)) {
-	t.Helper()
+func newTestCore(tb testing.TB) (c *core.Core, close func(tb testing.TB)) {
+	tb.Helper()
 
-	cfg := test.LoadConfig(t)
+	cfg := test.LoadConfig(tb)
 	cfg.ImageContentTypes = append(cfg.ImageContentTypes, contentType)
 	cfg.SupportedImageSizes = append(cfg.SupportedImageSizes, imageSize)
 
-	kvp := test.InitKVP(t)
+	kvp := test.InitKVP(tb)
 
 	s3, err := s3.NewS3Storage(cfg.S3)
-	test.AssertErrNil(t, err)
+	test.AssertErrNil(tb, err)
 
 	c = core.NewCore(core.Essentials{
 		ImageMetaRepository: imredis.NewImageMetaRepository(kvp),
 		ImageIDRepository:   imredis.NewImageIDRepository(kvp),
 		FileStorage:         s3,
-		FileCache:           nil,
 		Validate:            validate.New(),
 	}, cfg.Core)
 
-	return c, func(t *testing.T) {
-		test.DisposeKVP(t, kvp)
+	return c, func(tb testing.TB) {
+		test.DisposeKVP(tb, kvp)
 	}
 }
 
 func getTestImageBytes(t *testing.T) []byte {
+	width, height := imageSize.Size()
+
 	var imageData bytes.Buffer
-	image := imaging.New(1, 1, color.Black)
+	image := imaging.New(width*2, height*2, color.Black)
 	err := imaging.Encode(&imageData, image, imaging.JPEG)
 	test.AssertErrNil(t, err)
 
@@ -320,5 +321,41 @@ func TestListImages(t *testing.T) {
 				t.Fatal("exp", tc.ExpCount, "got", len(images))
 			}
 		})
+	}
+}
+
+func BenchmarkImage(b *testing.B) {
+	// cpu: Intel(R) Core(TM) i5-7300HQ CPU @ 2.50GHz
+	// BenchmarkImage
+	// BenchmarkImage-4             288           4092604 ns/op           28785 B/op        386 allocs/op
+
+	c, close := newTestCore(b)
+	defer close(b)
+
+	var imageData bytes.Buffer
+	image := imaging.New(1, 1, color.Black)
+	err := imaging.Encode(&imageData, image, imaging.JPEG)
+	test.AssertErrNil(b, err)
+
+	ctx := context.Background()
+	im, err := c.UploadImage(ctx, imager.ImageMeta{
+		ID:        "",
+		Author:    "author",
+		WEBSource: "websource",
+		MIMEType:  contentType,
+		Size:      int64(imageData.Len()),
+		Category:  "test",
+	}, &imageData)
+	test.AssertErrNil(b, err)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		f, err := c.GetImage(ctx, im.ID, imageSize)
+		test.AssertErrNil(b, err)
+
+		err = f.Close()
+		test.AssertErrNil(b, err)
 	}
 }

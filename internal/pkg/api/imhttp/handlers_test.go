@@ -132,7 +132,6 @@ func TestServer(t *testing.T) {
 		ImageMetaRepository: imredis.NewImageMetaRepository(kvp),
 		ImageIDRepository:   imredis.NewImageIDRepository(kvp),
 		FileStorage:         s3,
-		FileCache:           nil,
 		Validate:            validate.New(),
 	}, cfg.Core)
 

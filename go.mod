@@ -11,6 +11,7 @@ require (
 	github.com/gomodule/redigo v1.8.3
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0
+	github.com/h2non/bimg v1.1.5
 	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
