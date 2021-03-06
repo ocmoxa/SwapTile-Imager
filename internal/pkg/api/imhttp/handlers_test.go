@@ -4,7 +4,8 @@ package imhttp_test
 
 import (
 	"bytes"
-	"image/color"
+	"image"
+	"image/jpeg"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -19,7 +20,6 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
 
-	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
@@ -38,11 +38,8 @@ func TestServer(t *testing.T) {
 	}{{
 		Request: func() *http.Request {
 			var imageData bytes.Buffer
-			err := imaging.Encode(
-				&imageData,
-				imaging.New(10, 10, color.Black),
-				imaging.JPEG,
-			)
+			image := image.NewNRGBA(image.Rect(0, 0, 10, 10))
+			err := jpeg.Encode(&imageData, image, &jpeg.Options{Quality: 10})
 			test.AssertErrNil(t, err)
 
 			var b bytes.Buffer

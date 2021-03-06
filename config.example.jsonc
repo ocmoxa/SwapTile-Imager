@@ -23,9 +23,18 @@
     },
     "core": {
         // SWAPTILE_CORE_IMAGE_CONTENT_TYPE.
-        "image_content_types": ["image/jpeg"],
+        "image_content_types": [
+            "image/jpeg",
+            "image/webp",
+            "image/png"
+        ],
         // SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES.
-        "supported_image_sizes": ["1920x1080", "480x360", "1080x1920", "360x480"],
+        "supported_image_sizes": [
+            "1920x1080",
+            "480x360",
+            "1080x1920",
+            "360x480"
+        ],
         // SWAPTILE_CORE_MAX_IMAGE_SIZE.
         "max_image_size": 12582912
     },

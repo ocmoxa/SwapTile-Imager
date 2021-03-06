@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/ocmoxa/SwapTile-Imager/badge.svg?branch=main)](https://coveralls.io/github/ocmoxa/SwapTile-Imager?branch=master)
 
 The server uses Minio for storing images and Redis for storing their
-metadata.
+metadata. The server supports efficient image resizing.
 
 # Development
 
