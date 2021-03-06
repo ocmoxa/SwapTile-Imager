@@ -6,14 +6,12 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
-
-	"github.com/google/uuid"
 )
 
 func TestNew(t *testing.T) {
 	v := validate.New()
 
-	err := v.Var(uuid.NewString(), "image_id")
+	err := v.Var("0m-cPyH_WDU", "image_id")
 	test.AssertErrNil(t, err)
 
 	err = v.Var("a", "category")
