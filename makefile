@@ -18,7 +18,12 @@ test: test.unit test.integration test.becnhmark
 .PHONY: test
 
 test.coverage:
-	go test -tags=integration,!integration -covermode=count -coverprofile=coverage.out $(TEST_ARGS) ${TEST_PKGS}
+	go test \
+		-tags=integration,!integration \
+		-covermode=atomic \
+		-coverprofile=coverage.out \
+		$(TEST_ARGS) \
+		${TEST_PKGS}
 .PHONY: test.coverage
 
 test.unit:
@@ -30,7 +35,7 @@ test.integration:
 .PHONY: test.integration
 
 test.becnhmark:
-	go test -v -test.run="^$$" -test.bench=. -tags=integration,!integration ${TEST_PKGS}
+	go test -test.run="^$$" -test.bench=. -tags=integration,!integration ${TEST_PKGS}
 .PHONY: test.becnhmark
 
 proto:

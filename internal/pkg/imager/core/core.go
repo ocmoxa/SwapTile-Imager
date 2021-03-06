@@ -14,16 +14,10 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/storage"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
 
-	"github.com/disintegration/imaging"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/h2non/bimg"
 	"github.com/rs/zerolog"
-)
-
-const (
-	outputImageFormat      = imaging.JPEG
-	outputImageContentType = "image/jpeg"
 )
 
 type Core struct {
@@ -175,7 +169,6 @@ func (c Core) GetImage(
 		return storage.File{}, fmt.Errorf("resizing image: %w", err)
 	}
 
-	f.ContentType = outputImageContentType
 	f.ReadCloser = io.NopCloser(bytes.NewReader(resizedImgData))
 
 	return f, nil

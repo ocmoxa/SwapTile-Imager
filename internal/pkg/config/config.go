@@ -31,7 +31,7 @@ type Config struct {
 type Server struct {
 	Name               string   `json:"name" env:"SWAPTILE_SERVER_NAME" envDefault:"SwapTile/Imager"`
 	Address            string   `json:"address" env:"SWAPTILE_SERVER_ADDRESS" envDefault:":8080"`
-	ExposeErrors       bool     `json:"expose_errors" env:"SWAPTILE_SERVER_EXPOSE_ERRORS" envDefault:"false"`
+	ExposeErrors       bool     `json:"expose_errors" env:"SWAPTILE_SERVER_EXPOSE_ERRORS" envDefault:"true"`
 	ReadTimeout        Duration `json:"read_timeout" env:"SWAPTILE_SERVER_READ_TIMEOUT" envDefault:"15s"`
 	WriteTimeout       Duration `json:"write_timeout" env:"SWAPTILE_SERVER_WRITE_TIMEOUT" envDefault:"15s"`
 	ShutdownTimeout    Duration `json:"shutdown_timeout" env:"SWAPTILE_SERVER_SHUTDOWN_TIMEOUT" envDefault:"5s"`
@@ -39,7 +39,7 @@ type Server struct {
 }
 
 type Core struct {
-	ImageContentTypes   []string           `json:"image_content_types" env:"SWAPTILE_CORE_IMAGE_CONTENT_TYPE" envDefault:"image/jpeg"`
+	ImageContentTypes   []string           `json:"image_content_types" env:"SWAPTILE_CORE_IMAGE_CONTENT_TYPE" envDefault:"image/jpeg,image/webp,image/png"`
 	SupportedImageSizes []imager.ImageSize `json:"supported_image_sizes" env:"SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES" envDefault:"1920x1080,480x360,1080x1920,360x480"`
 	// MaxImageSize is in bytes.
 	MaxImageSize int64 `json:"max_image_size" env:"SWAPTILE_CORE_MAX_IMAGE_SIZE" envDefault:"12582912"`

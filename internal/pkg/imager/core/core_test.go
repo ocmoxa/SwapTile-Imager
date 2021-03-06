@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"image"
 	"image/color"
+	"image/jpeg"
 	"math"
 	"testing"
 
@@ -54,8 +56,8 @@ func getTestImageBytes(t *testing.T) []byte {
 	width, height := imageSize.Size()
 
 	var imageData bytes.Buffer
-	image := imaging.New(width*2, height*2, color.Black)
-	err := imaging.Encode(&imageData, image, imaging.JPEG)
+	image := image.NewNRGBA(image.Rect(0, 0, width*2, height*2))
+	err := jpeg.Encode(&imageData, image, &jpeg.Options{Quality: 10})
 	test.AssertErrNil(t, err)
 
 	return imageData.Bytes()
@@ -160,7 +162,7 @@ func TestGetImage(t *testing.T) {
 		ErrTarget: &imerrors.UserError{},
 	}, {
 		Name:      "invalid_image_id",
-		ID:        "invalid",
+		ID:        string([]byte{0, 1, 2}),
 		Size:      imageSize,
 		ErrTarget: &imerrors.UserError{},
 	}}

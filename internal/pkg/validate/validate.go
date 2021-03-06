@@ -12,8 +12,8 @@ import (
 func New() *validator.Validate {
 	v := validator.New()
 
-	v.RegisterAlias("image_id", "uuid")
-	v.RegisterAlias("category", "alphanum")
+	v.RegisterAlias("image_id", "printascii,min=1,max=64")
+	v.RegisterAlias("category", "alphanum,min=1,max=64")
 
 	return v
 }

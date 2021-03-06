@@ -60,6 +60,7 @@ func middlewareDump(next http.Handler) http.Handler {
 			Interface("header", r.Header).
 			Str("method", r.Method).
 			Stringer("url", r.URL).
+			Int("status", srw.Code).
 			Msg("respond")
 	})
 }
