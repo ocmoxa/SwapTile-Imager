@@ -31,7 +31,7 @@ type Config struct {
 type Server struct {
 	Name               string   `json:"name" env:"SWAPTILE_SERVER_NAME" envDefault:"SwapTile/Imager"`
 	Address            string   `json:"address" env:"SWAPTILE_SERVER_ADDRESS" envDefault:":8080"`
-	ExposeErrors       bool     `json:"expose_errors" env:"SWAPTILE_SERVER_EXPOSE_ERRORS" envDefault:"false"`
+	ExposeErrors       bool     `json:"expose_errors" env:"SWAPTILE_SERVER_EXPOSE_ERRORS" envDefault:"true"`
 	ReadTimeout        Duration `json:"read_timeout" env:"SWAPTILE_SERVER_READ_TIMEOUT" envDefault:"15s"`
 	WriteTimeout       Duration `json:"write_timeout" env:"SWAPTILE_SERVER_WRITE_TIMEOUT" envDefault:"15s"`
 	ShutdownTimeout    Duration `json:"shutdown_timeout" env:"SWAPTILE_SERVER_SHUTDOWN_TIMEOUT" envDefault:"5s"`
