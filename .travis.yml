@@ -16,9 +16,6 @@ notifications:
   email: false
 
 before_install:
-- sudo apt-get -q update
-- sudo apt-get -y install libvips-dev build-essential
-- GO111MODULE=off go get github.com/mattn/goveralls
 - docker pull minio/minio:latest
 - docker run -d
   -p 127.0.0.1:9000:9000
@@ -27,6 +24,9 @@ before_install:
   --entrypoint sh
   minio/minio
   -c '/usr/bin/minio server /data'
+- sudo apt-get -q update
+- sudo apt-get -y install libvips-dev build-essential
+- GO111MODULE=off go get github.com/mattn/goveralls
 
 script:
 - make prepare
