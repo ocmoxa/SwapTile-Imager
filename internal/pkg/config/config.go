@@ -68,8 +68,11 @@ func Load(file string) (cfg Config, err error) {
 	err = env.ParseWithFuncs(&cfg, map[reflect.Type]env.ParserFunc{
 		reflect.TypeOf(Duration(time.Nanosecond)): func(v string) (interface{}, error) {
 			d, err := time.ParseDuration(v)
+			if err != nil {
+				return nil, fmt.Errorf("parsing duration: %w", err)
+			}
 
-			return Duration(d), fmt.Errorf("parsing duration: %w", err)
+			return Duration(d), nil
 		},
 	})
 	if err != nil {
