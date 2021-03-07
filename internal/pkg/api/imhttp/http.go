@@ -14,15 +14,18 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Server HTTP.
 type Server struct {
 	http.Server
 }
 
+// Essentials of the server.
 type Essentials struct {
 	zerolog.Logger
 	*core.Core
 }
 
+// NewServer creates new http server.
 func NewServer(es Essentials, cfg config.Server) (*Server, error) {
 	h := handlers{
 		core:         es.Core,

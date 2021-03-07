@@ -9,6 +9,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+// AssertErrNil checks that err is nil else call fatal.
 func AssertErrNil(tb testing.TB, err error) {
 	tb.Helper()
 

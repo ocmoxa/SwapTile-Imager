@@ -36,6 +36,7 @@ func (r ImageMetaRepository) key(category string) string {
 	return keyPrefixImageMeta + category
 }
 
+// List of image meta.
 func (r ImageMetaRepository) List(
 	ctx context.Context,
 	category string,
@@ -72,6 +73,7 @@ func (r ImageMetaRepository) List(
 	return im, nil
 }
 
+// Insert an image metadata.
 func (r ImageMetaRepository) Insert(
 	ctx context.Context,
 	im imager.ImageMeta,
@@ -106,6 +108,7 @@ func (r ImageMetaRepository) Insert(
 	return err
 }
 
+// Delete an image metadata by index in the category.
 func (r ImageMetaRepository) Delete(
 	ctx context.Context,
 	category string,
@@ -148,6 +151,7 @@ func (r ImageMetaRepository) Delete(
 	return err
 }
 
+// Shuffle image metadata in the category.
 func (r ImageMetaRepository) Shuffle(
 	ctx context.Context,
 	category string,
@@ -205,6 +209,8 @@ func (r ImageMetaRepository) Shuffle(
 	return nil
 }
 
+// Categories returns a list of known categories. This data is obtained
+// from the keys of the images.
 func (r ImageMetaRepository) Categories(
 	ctx context.Context,
 ) (categories []string, err error) {

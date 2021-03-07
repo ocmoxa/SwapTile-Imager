@@ -21,23 +21,23 @@ func TestNew(t *testing.T) {
 func TestValidateImageSize(t *testing.T) {
 	supported := []imager.ImageSize{"1024x768", "640x360"}
 
-	err := validate.ValidateImageSize(imager.ImageSize("10x10"), supported)
+	err := validate.ImageSize(imager.ImageSize("10x10"), supported)
 	if err == nil {
 		t.Fatal(err)
 	}
 
-	err = validate.ValidateImageSize(imager.ImageSize("1024x768"), supported)
+	err = validate.ImageSize(imager.ImageSize("1024x768"), supported)
 	test.AssertErrNil(t, err)
 }
 
 func TestValidateContentType(t *testing.T) {
 	supported := []string{"image/jpeg", "image/png"}
 
-	err := validate.ValidateContentType("image/gif", supported)
+	err := validate.ContentType("image/gif", supported)
 	if err == nil {
 		t.Fatal(err)
 	}
 
-	err = validate.ValidateContentType("image/jpeg", supported)
+	err = validate.ContentType("image/jpeg", supported)
 	test.AssertErrNil(t, err)
 }

@@ -37,7 +37,7 @@ func newTestCore(tb testing.TB) (c *core.Core, close func(tb testing.TB)) {
 
 	kvp := test.InitKVP(tb)
 
-	s3, err := s3.NewS3Storage(cfg.S3)
+	s3, err := s3.NewStorage(cfg.S3)
 	test.AssertErrNil(tb, err)
 
 	c = core.NewCore(core.Essentials{

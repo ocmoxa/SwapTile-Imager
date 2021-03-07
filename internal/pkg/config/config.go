@@ -28,6 +28,7 @@ type Config struct {
 	Server `json:"Server"`
 }
 
+// Server contains config of the HTTP server.
 type Server struct {
 	Name               string   `json:"name" env:"SWAPTILE_SERVER_NAME" envDefault:"SwapTile/Imager"`
 	Address            string   `json:"address" env:"SWAPTILE_SERVER_ADDRESS" envDefault:":8080"`
@@ -38,6 +39,7 @@ type Server struct {
 	CacheControlMaxAge Duration `json:"cache_control_max_age" env:"SWAPTILE_SERVER_CACHE_CONTROL_MAX_AGE" envDefault:"0"`
 }
 
+// Core contains config of the main application logic.
 type Core struct {
 	ImageContentTypes   []string           `json:"image_content_types" env:"SWAPTILE_CORE_IMAGE_CONTENT_TYPE" envDefault:"image/jpeg,image/webp,image/png"`
 	SupportedImageSizes []imager.ImageSize `json:"supported_image_sizes" env:"SWAPTILE_CORE_SUPPORTED_IMAGE_SIZES" envDefault:"1920x1080,480x360,1080x1920,360x480"`
@@ -94,8 +96,10 @@ func Load(file string) (cfg Config, err error) {
 	return cfg, nil
 }
 
+// Duration helps to parse string duration to time.Duration.
 type Duration time.Duration
 
+// UnmarshalJSON implements json unmarshaller interface.
 func (d *Duration) UnmarshalJSON(b []byte) error {
 	var v interface{}
 	if err := json.Unmarshal(b, &v); err != nil {

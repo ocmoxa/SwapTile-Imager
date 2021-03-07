@@ -133,7 +133,7 @@ func TestServer(t *testing.T) {
 	kvp := test.InitKVP(t)
 	defer test.DisposeKVP(t, kvp)
 
-	s3, err := s3.NewS3Storage(cfg.S3)
+	s3, err := s3.NewStorage(cfg.S3)
 	test.AssertErrNil(t, err)
 
 	c := core.NewCore(core.Essentials{

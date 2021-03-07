@@ -14,15 +14,15 @@ import (
 	"github.com/minio/minio-go"
 )
 
-// S3Storage implements storage.FileStorage for S3.
-type S3Storage struct {
+// Storage implements storage.FileStorage for S3.
+type Storage struct {
 	client *minio.Client
 	cfg    config.S3
 }
 
-// NewS3Storage create new S3 file storage that implements
+// NewStorage create new S3 file storage that implements
 // storage.FileStorage interface.
-func NewS3Storage(cfg config.S3) (*S3Storage, error) {
+func NewStorage(cfg config.S3) (*Storage, error) {
 	client, err := minio.New(
 		cfg.Endpoint,
 		cfg.AccessKeyID,
@@ -44,13 +44,14 @@ func NewS3Storage(cfg config.S3) (*S3Storage, error) {
 		}
 	}
 
-	return &S3Storage{
+	return &Storage{
 		client: client,
 		cfg:    cfg,
 	}, nil
 }
 
-func (s S3Storage) Get(
+// Get an image by ID from S3.
+func (s Storage) Get(
 	ctx context.Context,
 	id string,
 ) (f storage.File, err error) {
@@ -77,7 +78,8 @@ func (s S3Storage) Get(
 	}, nil
 }
 
-func (s S3Storage) Upload(ctx context.Context, im imager.ImageMeta, r io.Reader) (err error) {
+// Upload an image to S3.
+func (s Storage) Upload(ctx context.Context, im imager.ImageMeta, r io.Reader) (err error) {
 	opts := minio.PutObjectOptions{
 		ContentType: im.MIMEType,
 	}
@@ -96,7 +98,8 @@ func (s S3Storage) Upload(ctx context.Context, im imager.ImageMeta, r io.Reader)
 	return nil
 }
 
-func (s S3Storage) Delete(ctx context.Context, id string) (err error) {
+// Delete S3 image by ID.
+func (s Storage) Delete(ctx context.Context, id string) (err error) {
 	err = s.client.RemoveObject(s.cfg.Bucket, id)
 	if err != nil {
 		return fmt.Errorf("s3 removing object: %w", err)

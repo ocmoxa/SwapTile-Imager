@@ -20,6 +20,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Core is the application main API.
 type Core struct {
 	cfg           config.Core
 	repoImageMeta repository.ImageMetaRepository
@@ -30,6 +31,7 @@ type Core struct {
 	buffersPool *sync.Pool
 }
 
+// Essentials of the Core.
 type Essentials struct {
 	repository.ImageMetaRepository
 	repository.ImageIDRepository
@@ -37,6 +39,7 @@ type Essentials struct {
 	*validator.Validate
 }
 
+// NewCore creates the application main API.
 func NewCore(es Essentials, cfg config.Core) *Core {
 	return &Core{
 		repoImageMeta: es.ImageMetaRepository,
@@ -52,6 +55,7 @@ func NewCore(es Essentials, cfg config.Core) *Core {
 	}
 }
 
+// UploadImage saves original image to storage.
 func (c Core) UploadImage(
 	ctx context.Context,
 	im imager.ImageMeta,
@@ -79,7 +83,7 @@ func (c Core) UploadImage(
 		return im, imerrors.NewUserError(err)
 	}
 
-	err = validate.ValidateContentType(im.MIMEType, c.cfg.ImageContentTypes)
+	err = validate.ContentType(im.MIMEType, c.cfg.ImageContentTypes)
 	if err != nil {
 		err = fmt.Errorf("validating content-type: %w", err)
 
@@ -118,6 +122,7 @@ func (c Core) UploadImage(
 	return im, nil
 }
 
+// GetImage downloads image, resizes it and returns its body.
 func (c Core) GetImage(
 	ctx context.Context,
 	id string,
@@ -132,7 +137,7 @@ func (c Core) GetImage(
 		Str("image_size", string(size)).
 		Msg("getting image")
 
-	err = validate.ValidateImageSize(size, c.cfg.SupportedImageSizes)
+	err = validate.ImageSize(size, c.cfg.SupportedImageSizes)
 	if err != nil {
 		err = fmt.Errorf("size: %w", err)
 
@@ -174,12 +179,14 @@ func (c Core) GetImage(
 	return f, nil
 }
 
+// ListCategories returns all known categories.
 func (c Core) ListCategories(
 	ctx context.Context,
 ) (data []string, err error) {
 	return c.repoImageMeta.Categories(ctx)
 }
 
+// ShuffleImages swaps random images in the category up to depth times.
 func (c Core) ShuffleImages(
 	ctx context.Context,
 	category string,
@@ -200,6 +207,7 @@ func (c Core) ShuffleImages(
 	return c.repoImageMeta.Shuffle(ctx, category, depth)
 }
 
+// ListImages returns a list of images by the category and pagination.
 func (c Core) ListImages(
 	ctx context.Context,
 	category string,

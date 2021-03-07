@@ -20,6 +20,7 @@ func NewImageIDRepository(kvp *redis.Pool) *ImageIDRepository {
 	}
 }
 
+// Set upserts image ID.
 func (r ImageIDRepository) Set(ctx context.Context, id string) (ok bool, err error) {
 	kv := r.kvp.Get()
 	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
@@ -27,6 +28,7 @@ func (r ImageIDRepository) Set(ctx context.Context, id string) (ok bool, err err
 	return redis.Bool(kv.Do("SADD", keyImageID, id))
 }
 
+// Delete image ID.
 func (r ImageIDRepository) Delete(ctx context.Context, id string) (err error) {
 	kv := r.kvp.Get()
 	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()

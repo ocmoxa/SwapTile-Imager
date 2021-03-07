@@ -1,4 +1,4 @@
-// Imager contains domain application models and interfaces.
+// Package imager contains domain application models and interfaces.
 package imager
 
 import (
@@ -25,7 +25,7 @@ type ImageMeta struct {
 // ImageSize is a size defined as a string: WIDTHxHEIGHT
 type ImageSize string
 
-// Width parses image size and returns width and height. If image size
+// Size parses image size and returns width and height. If image size
 // is invalid both values will be zero.
 func (is ImageSize) Size() (width int, height int) {
 	sizeTokens := strings.Split(string(is), "x")
