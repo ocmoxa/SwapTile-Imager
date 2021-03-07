@@ -117,4 +117,9 @@ func mountInternalAPI(r *mux.Router, h *handlers) {
 		Path("/images").
 		Methods(http.MethodPut).
 		HandlerFunc(h.PutImage)
+
+	internalAPIV1.
+		Path("/images/shuffle").
+		Methods(http.MethodPost).
+		HandlerFunc(h.PostShuffle)
 }

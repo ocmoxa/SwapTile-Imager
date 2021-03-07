@@ -4,6 +4,8 @@ package imredis_test
 
 import (
 	"context"
+	"math/rand"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -85,4 +87,84 @@ func mustExistsImageMeta(
 	if !found {
 		t.Fatal(id, "not in", imageMetaList)
 	}
+}
+
+func TestImageMetaRepository_Shuffle(t *testing.T) {
+	const count = 10
+	const depth = 100
+	category := uuid.New().String()
+
+	kvp := test.InitKVP(t)
+	defer test.DisposeKVP(t, kvp)
+
+	ctx := context.Background()
+	pagination := repository.Pagination{
+		Limit:  1000,
+		Offset: 0,
+	}
+
+	var imageMetaRepo repository.ImageMetaRepository = imredis.NewImageMetaRepository(kvp)
+	for i := 0; i < count; i++ {
+		err := imageMetaRepo.Insert(ctx, imager.ImageMeta{
+			ID:        "test_id_" + strconv.Itoa(i),
+			Author:    "test_author",
+			WEBSource: "test_websource",
+			MIMEType:  "test_mimetype",
+			Category:  category,
+		})
+		test.AssertErrNil(t, err)
+	}
+
+	initialMeta, err := imageMetaRepo.List(ctx, category, pagination)
+	test.AssertErrNil(t, err)
+	if len(initialMeta) == 0 {
+		t.Fatal(len(initialMeta))
+	}
+
+	rand.Seed(1)
+
+	err = imageMetaRepo.Shuffle(ctx, category, depth)
+	test.AssertErrNil(t, err)
+
+	shuffledMeta, err := imageMetaRepo.List(ctx, category, pagination)
+	test.AssertErrNil(t, err)
+	if len(shuffledMeta) != len(initialMeta) {
+		t.Fatal("exp", len(initialMeta), "got", len(shuffledMeta))
+	}
+
+	var equalCount int
+	for i, im := range initialMeta {
+		if im.ID == shuffledMeta[i].ID {
+			equalCount++
+		}
+	}
+
+	t.Log("coincided", equalCount, "elements out of", len(initialMeta))
+
+	if equalCount == len(initialMeta) {
+		t.Fatal()
+	}
+}
+
+func TestImageMetaRepository_Shuffle_empty(t *testing.T) {
+	const depth = 100
+	category := uuid.New().String()
+
+	kvp := test.InitKVP(t)
+	defer test.DisposeKVP(t, kvp)
+
+	ctx := context.Background()
+	var imageMetaRepo repository.ImageMetaRepository = imredis.NewImageMetaRepository(kvp)
+
+	rand.Seed(1)
+
+	t.Run("empty_list", func(t *testing.T) {
+		err := imageMetaRepo.Shuffle(ctx, category, depth)
+		test.AssertErrNil(t, err)
+	})
+
+	t.Run("zero_depth", func(t *testing.T) {
+		err := imageMetaRepo.Shuffle(ctx, category, 0)
+		test.AssertErrNil(t, err)
+	})
 }

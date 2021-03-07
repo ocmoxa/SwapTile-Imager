@@ -167,6 +167,31 @@ func (h *handlers) PutImage(w http.ResponseWriter, r *http.Request) {
 	h.repondJSON(ctx, w, im)
 }
 
+func (h *handlers) PostShuffle(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var body struct {
+		Category string `json:"category"`
+		Depth    int    `json:"depth"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		h.respondErr(ctx, w, imerrors.NewUserError(err))
+
+		return
+	}
+
+	err = h.core.ShuffleImages(ctx, body.Category, body.Depth)
+	if err != nil {
+		h.respondErr(ctx, w, err)
+
+		return
+	}
+
+	h.repondJSON(ctx, w, "ok")
+}
+
 func (h *handlers) repondJSON(ctx context.Context, w http.ResponseWriter, data interface{}) {
 	w.Header().Set(headerContentType, contentTypeJSON)
 

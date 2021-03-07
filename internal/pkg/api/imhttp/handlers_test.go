@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/api/imhttp"
@@ -112,6 +113,16 @@ func TestServer(t *testing.T) {
 			)
 		},
 		ExpStatus: http.StatusNotFound,
+	}, {
+		Request: func() *http.Request {
+			const data = `{"category":"test","depth":1}`
+			return httptest.NewRequest(
+				http.MethodPost,
+				"/internal/api/v1/images/shuffle",
+				strings.NewReader(data),
+			)
+		},
+		ExpStatus: http.StatusOK,
 	}}
 
 	cfg := test.LoadConfig(t)

@@ -180,6 +180,26 @@ func (c Core) ListCategories(
 	return c.repoImageMeta.Categories(ctx)
 }
 
+func (c Core) ShuffleImages(
+	ctx context.Context,
+	category string,
+	depth int,
+) (err error) {
+	if err = c.validate.Var(category, "category"); err != nil {
+		err = fmt.Errorf("validating category: %w", err)
+
+		return imerrors.NewUserError(err)
+	}
+
+	if err = c.validate.Var(depth, "min=1,max=1000"); err != nil {
+		err = fmt.Errorf("validating depth: %w", err)
+
+		return imerrors.NewUserError(err)
+	}
+
+	return c.repoImageMeta.Shuffle(ctx, category, depth)
+}
+
 func (c Core) ListImages(
 	ctx context.Context,
 	category string,

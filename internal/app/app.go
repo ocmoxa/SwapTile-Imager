@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
@@ -35,6 +36,8 @@ func Start(ctx context.Context, configFile string) (done chan struct{}) {
 }
 
 func runApp(ctx context.Context, l zerolog.Logger, configFile string) (err error) {
+	rand.Seed(time.Now().Unix())
+
 	cfg, err := config.Load(configFile)
 	if err != nil {
 		return fmt.Errorf("loading config: %w", err)

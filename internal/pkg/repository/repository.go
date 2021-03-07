@@ -19,6 +19,9 @@ type ImageMetaRepository interface {
 	Delete(ctx context.Context, category string, index int) (err error)
 	// Categories returns a list of known categories.
 	Categories(ctx context.Context) (categories []string, err error)
+	// Shuffle swaps random images in the category. The depth should be
+	// positive.
+	Shuffle(ctx context.Context, category string, depth int) (err error)
 }
 
 // ImageIDRepository saves image ids to ensure uniqueness.
