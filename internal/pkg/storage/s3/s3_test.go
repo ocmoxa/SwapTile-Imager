@@ -19,7 +19,7 @@ import (
 )
 
 func TestStorage(t *testing.T) {
-	s, err := s3.NewS3Storage(test.LoadConfig(t).S3)
+	s, err := s3.NewStorage(test.LoadConfig(t).S3)
 	test.AssertErrNil(t, err)
 
 	var storage storage.FileStorage = s

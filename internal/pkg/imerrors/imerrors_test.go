@@ -72,8 +72,8 @@ func TestSubWrappedErrors(t *testing.T) {
 }
 
 func TestErrorPair(t *testing.T) {
-	errFirst := errors.New("first")
-	errSecond := errors.New("second")
+	const errFirst imerrors.Error = "first"
+	const errSecond imerrors.Error = "second"
 
 	t.Run("pair", func(t *testing.T) {
 		err := imerrors.ErrorPair(errFirst, errSecond)

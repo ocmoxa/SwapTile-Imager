@@ -1,6 +1,7 @@
 # Sensative data.
 /data
 docker-compose.production.yml
+.vscode
 
 # Binaries for programs and plugins
 *.exe

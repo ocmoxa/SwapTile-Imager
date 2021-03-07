@@ -1,0 +1,24 @@
+{
+    "linters": {
+      "enable-all": true,
+      "disable": [
+          "testpackage",
+          "paralleltest",
+          "exhaustivestruct",
+          "wsl",
+          "errorlint",
+          "goerr113",
+          "lll",
+          "gci"
+      ]
+    },
+    "linters-settings": {
+        "funlen": {
+            "statements": 80,
+            "lines": 100
+        },
+        "goimports": {
+            "local-prefixes": "github.com/ocmoxa/SwapTile-Imager"
+        }
+    }
+  }

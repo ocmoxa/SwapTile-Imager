@@ -87,6 +87,39 @@ paths:
           description: Internal server error.
         "503":
           description: Service unavailable.
+  /internal/api/v1/images/shuffle:
+    post:
+      tags: [internal]
+      summary: Shuffle images in the category.
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+              - category
+              - depth
+              properties:
+                category:
+                  type: string
+                  example: all
+                depth:
+                  type: integer
+                  example: 512
+      responses:
+        "200":
+          description: Image metadata.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ok
+        "400":
+          description: Bad request.
+        "500":
+          description: Internal server error.
+        "503":
+          description: Service unavailable.
   /internal/api/v1/images:
     put:
       tags: [internal]

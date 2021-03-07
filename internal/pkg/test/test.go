@@ -2,6 +2,7 @@
 package test
 
 import (
+	"io"
 	"testing"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/config"
@@ -9,6 +10,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+// AssertErrNil checks that err is nil else call fatal.
 func AssertErrNil(tb testing.TB, err error) {
 	tb.Helper()
 
@@ -40,7 +42,7 @@ func InitKVP(tb testing.TB) *redis.Pool {
 }
 
 // DisposeKVP closes *redis.Pool. Call it in defer.
-func DisposeKVP(tb testing.TB, kvp *redis.Pool) {
+func DisposeKVP(tb testing.TB, kvp io.Closer) {
 	tb.Helper()
 
 	if kvp == nil {

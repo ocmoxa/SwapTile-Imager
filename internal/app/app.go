@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Start starts the application, it stops gracefully after context
+// cancellation.
 func Start(ctx context.Context, configFile string) (done chan struct{}) {
 	done = make(chan struct{})
 
@@ -35,6 +38,8 @@ func Start(ctx context.Context, configFile string) (done chan struct{}) {
 }
 
 func runApp(ctx context.Context, l zerolog.Logger, configFile string) (err error) {
+	rand.Seed(time.Now().Unix())
+
 	cfg, err := config.Load(configFile)
 	if err != nil {
 		return fmt.Errorf("loading config: %w", err)
@@ -60,7 +65,7 @@ func runApp(ctx context.Context, l zerolog.Logger, configFile string) (err error
 	repoImageMeta := imredis.NewImageMetaRepository(kvp)
 	repoImageID := imredis.NewImageIDRepository(kvp)
 
-	fileStorage, err := s3.NewS3Storage(cfg.S3)
+	fileStorage, err := s3.NewStorage(cfg.S3)
 	if err != nil {
 		return fmt.Errorf("initializing file storage: %w", err)
 	}

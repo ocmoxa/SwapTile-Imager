@@ -18,8 +18,8 @@ func New() *validator.Validate {
 	return v
 }
 
-// ValidateImageSize checks that image size is supported.
-func ValidateImageSize(
+// ImageSize checks that image size is supported.
+func ImageSize(
 	size imager.ImageSize,
 	supportedSizes []imager.ImageSize,
 ) (err error) {
@@ -32,8 +32,8 @@ func ValidateImageSize(
 	return fmt.Errorf("expected one of %v", supportedSizes)
 }
 
-// ValidateImageSize checks that content-type is supported.
-func ValidateContentType(
+// ContentType checks that content-type is supported.
+func ContentType(
 	contentType string,
 	supportedContentTypes []string,
 ) (err error) {

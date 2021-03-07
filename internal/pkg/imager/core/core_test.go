@@ -37,7 +37,7 @@ func newTestCore(tb testing.TB) (c *core.Core, close func(tb testing.TB)) {
 
 	kvp := test.InitKVP(tb)
 
-	s3, err := s3.NewS3Storage(cfg.S3)
+	s3, err := s3.NewStorage(cfg.S3)
 	test.AssertErrNil(tb, err)
 
 	c = core.NewCore(core.Essentials{
@@ -322,6 +322,60 @@ func TestListImages(t *testing.T) {
 			if len(images) != tc.ExpCount {
 				t.Fatal("exp", tc.ExpCount, "got", len(images))
 			}
+		})
+	}
+}
+
+func TestShuffleImages(t *testing.T) {
+	const okCategory = "test"
+	const okDepth = 1
+
+	testCases := []struct {
+		Name      string
+		Category  string
+		Depth     int
+		ErrTarget interface{}
+	}{{
+		Name:      "ok",
+		Category:  okCategory,
+		Depth:     okDepth,
+		ErrTarget: nil,
+	}, {
+		Name:      "empty_category",
+		Category:  "",
+		Depth:     okDepth,
+		ErrTarget: &imerrors.UserError{},
+	}, {
+		Name:      "zero_depth",
+		Category:  okCategory,
+		Depth:     0,
+		ErrTarget: &imerrors.UserError{},
+	}, {
+		Name:      "depth_out_of_range",
+		Category:  okCategory,
+		Depth:     1001,
+		ErrTarget: &imerrors.UserError{},
+	}}
+
+	c, close := newTestCore(t)
+	defer close(t)
+
+	ctx := context.Background()
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			err := c.ShuffleImages(ctx, tc.Category, tc.Depth)
+
+			if tc.ErrTarget != nil {
+				if !errors.As(err, tc.ErrTarget) {
+					t.Fatal(err)
+				}
+
+				return
+			}
+
+			test.AssertErrNil(t, err)
 		})
 	}
 }

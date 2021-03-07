@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/api/imhttp"
@@ -112,6 +113,16 @@ func TestServer(t *testing.T) {
 			)
 		},
 		ExpStatus: http.StatusNotFound,
+	}, {
+		Request: func() *http.Request {
+			const data = `{"category":"test","depth":1}`
+			return httptest.NewRequest(
+				http.MethodPost,
+				"/internal/api/v1/images/shuffle",
+				strings.NewReader(data),
+			)
+		},
+		ExpStatus: http.StatusOK,
 	}}
 
 	cfg := test.LoadConfig(t)
@@ -122,7 +133,7 @@ func TestServer(t *testing.T) {
 	kvp := test.InitKVP(t)
 	defer test.DisposeKVP(t, kvp)
 
-	s3, err := s3.NewS3Storage(cfg.S3)
+	s3, err := s3.NewStorage(cfg.S3)
 	test.AssertErrNil(t, err)
 
 	c := core.NewCore(core.Essentials{

@@ -1,7 +1,6 @@
 package imhttp
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/pprof"
 	"time"
@@ -14,15 +13,18 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Server HTTP.
 type Server struct {
 	http.Server
 }
 
+// Essentials of the server.
 type Essentials struct {
 	zerolog.Logger
 	*core.Core
 }
 
+// NewServer creates new http server.
 func NewServer(es Essentials, cfg config.Server) (*Server, error) {
 	h := handlers{
 		core:         es.Core,
@@ -33,10 +35,7 @@ func NewServer(es Essentials, cfg config.Server) (*Server, error) {
 	r.NotFoundHandler = http.HandlerFunc(h.NotFoundHandler)
 
 	mountDebug(r)
-	err := mountSwagger(r)
-	if err != nil {
-		return nil, fmt.Errorf("mounting swagger: %w", err)
-	}
+	mountSwagger(r)
 
 	r.Use(
 		mux.CORSMethodMiddleware(r),
@@ -61,7 +60,7 @@ func NewServer(es Essentials, cfg config.Server) (*Server, error) {
 	}, nil
 }
 
-func mountSwagger(r *mux.Router) (err error) {
+func mountSwagger(r *mux.Router) {
 	fsys := docs.Swagger()
 
 	r.Handle("/", http.RedirectHandler("/swagger/ui/", http.StatusPermanentRedirect))
@@ -70,8 +69,6 @@ func mountSwagger(r *mux.Router) (err error) {
 	h = http.StripPrefix("/swagger", h)
 
 	r.PathPrefix("/swagger/").Handler(h)
-
-	return nil
 }
 
 func mountDebug(r *mux.Router) {
@@ -117,4 +114,9 @@ func mountInternalAPI(r *mux.Router, h *handlers) {
 		Path("/images").
 		Methods(http.MethodPut).
 		HandlerFunc(h.PutImage)
+
+	internalAPIV1.
+		Path("/images/shuffle").
+		Methods(http.MethodPost).
+		HandlerFunc(h.PostShuffle)
 }
