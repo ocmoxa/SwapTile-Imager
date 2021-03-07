@@ -72,7 +72,9 @@ func (c Core) UploadImage(
 		Msg("uploading image")
 
 	if im.Size > c.cfg.MaxImageSize {
-		err = fmt.Errorf("max allowed image size is %d", c.cfg.MaxImageSize)
+		err = imerrors.Error(
+			fmt.Sprintf("max allowed image size is %d", c.cfg.MaxImageSize),
+		)
 
 		return im, imerrors.NewOversizeError(err)
 	}
@@ -116,7 +118,7 @@ func (c Core) UploadImage(
 				Msg("failed to rollback file upload")
 		}
 
-		return im, err
+		return im, fmt.Errorf("inserting meta: %w", err)
 	}
 
 	return im, nil

@@ -171,6 +171,7 @@ func (r ImageMetaRepository) Shuffle(
 	}
 
 	for i := 0; i < depth; i++ {
+		// nolint: gosec // It requires speed.
 		elementIndex := rand.Intn(count)
 
 		element, err := redis.Bytes(kv.Do(

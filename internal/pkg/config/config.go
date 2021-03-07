@@ -68,7 +68,8 @@ func Load(file string) (cfg Config, err error) {
 	err = env.ParseWithFuncs(&cfg, map[reflect.Type]env.ParserFunc{
 		reflect.TypeOf(Duration(time.Nanosecond)): func(v string) (interface{}, error) {
 			d, err := time.ParseDuration(v)
-			return Duration(d), err
+
+			return Duration(d), fmt.Errorf("parsing duration: %w", err)
 		},
 	})
 	if err != nil {
@@ -103,7 +104,7 @@ type Duration time.Duration
 func (d *Duration) UnmarshalJSON(b []byte) error {
 	var v interface{}
 	if err := json.Unmarshal(b, &v); err != nil {
-		return err
+		return fmt.Errorf("decoding data: %w", err)
 	}
 
 	switch value := v.(type) {
@@ -114,7 +115,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 	case string:
 		duration, err := time.ParseDuration(value)
 		if err != nil {
-			return err
+			return fmt.Errorf("parsing duration: %w", err)
 		}
 
 		*d = Duration(duration)

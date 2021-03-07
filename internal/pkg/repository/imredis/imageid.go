@@ -2,9 +2,11 @@ package imredis
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
 )
 
 // ImageIDRepository implements storage.ImageIDRepository.
@@ -25,7 +27,12 @@ func (r ImageIDRepository) Set(ctx context.Context, id string) (ok bool, err err
 	kv := r.kvp.Get()
 	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
 
-	return redis.Bool(kv.Do("SADD", keyImageID, id))
+	ok, err = redis.Bool(kv.Do("SADD", keyImageID, id))
+	if err != nil {
+		return false, fmt.Errorf("doing sadd: %w", err)
+	}
+
+	return ok, nil
 }
 
 // Delete image ID.
@@ -34,5 +41,9 @@ func (r ImageIDRepository) Delete(ctx context.Context, id string) (err error) {
 	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
 
 	_, err = kv.Do("SREM", keyImageID, id)
-	return err
+	if err != nil {
+		return fmt.Errorf("doing srem: %w", err)
+	}
+
+	return nil
 }

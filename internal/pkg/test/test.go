@@ -2,6 +2,7 @@
 package test
 
 import (
+	"io"
 	"testing"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/config"
@@ -41,7 +42,7 @@ func InitKVP(tb testing.TB) *redis.Pool {
 }
 
 // DisposeKVP closes *redis.Pool. Call it in defer.
-func DisposeKVP(tb testing.TB, kvp *redis.Pool) {
+func DisposeKVP(tb testing.TB, kvp io.Closer) {
 	tb.Helper()
 
 	if kvp == nil {

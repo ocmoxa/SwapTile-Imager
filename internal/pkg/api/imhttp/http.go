@@ -1,7 +1,6 @@
 package imhttp
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/pprof"
 	"time"
@@ -36,10 +35,7 @@ func NewServer(es Essentials, cfg config.Server) (*Server, error) {
 	r.NotFoundHandler = http.HandlerFunc(h.NotFoundHandler)
 
 	mountDebug(r)
-	err := mountSwagger(r)
-	if err != nil {
-		return nil, fmt.Errorf("mounting swagger: %w", err)
-	}
+	mountSwagger(r)
 
 	r.Use(
 		mux.CORSMethodMiddleware(r),
@@ -64,7 +60,7 @@ func NewServer(es Essentials, cfg config.Server) (*Server, error) {
 	}, nil
 }
 
-func mountSwagger(r *mux.Router) (err error) {
+func mountSwagger(r *mux.Router) {
 	fsys := docs.Swagger()
 
 	r.Handle("/", http.RedirectHandler("/swagger/ui/", http.StatusPermanentRedirect))
@@ -73,8 +69,6 @@ func mountSwagger(r *mux.Router) (err error) {
 	h = http.StripPrefix("/swagger", h)
 
 	r.PathPrefix("/swagger/").Handler(h)
-
-	return nil
 }
 
 func mountDebug(r *mux.Router) {
