@@ -39,7 +39,7 @@ func (rawIM *RawImageMetaJSON) MarshalJSON() ([]byte, error) {
 	return []byte(*rawIM), nil
 }
 
-// UnmarshalJSON implements JSON marshaller.
+// UnmarshalJSON implements JSON unmarshaller.
 func (rawIM *RawImageMetaJSON) UnmarshalJSON(data []byte) error {
 	*rawIM = make(RawImageMetaJSON, len(data))
 	copy(*rawIM, data)

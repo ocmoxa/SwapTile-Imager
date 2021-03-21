@@ -129,7 +129,7 @@ func (c Core) UploadImage(
 	return im, nil
 }
 
-// Delete image from a database and a storage.
+// DeleteImage from a database and a storage.
 func (c Core) DeleteImage(ctx context.Context, id string) (err error) {
 	if err = c.validate.Var(id, "image_id"); err != nil {
 		err = fmt.Errorf("validating image_id: %w", err)
