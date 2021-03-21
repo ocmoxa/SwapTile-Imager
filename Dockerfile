@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine3.13
+FROM golang:1.16.2-alpine3.13
 WORKDIR /app
 RUN apk add \
     --update \
@@ -8,7 +8,7 @@ RUN apk add \
 COPY . .
 RUN make build
 
-FROM golang:1.16-alpine3.13
+FROM golang:1.16.2-alpine3.13
 WORKDIR /app
 RUN apk add --update --no-cache vips
 COPY --from=0 /app/bin/imager /app/imager

@@ -3,6 +3,7 @@
 package imredis_test
 
 import (
+	"bytes"
 	"context"
 	"math/rand"
 	"strconv"
@@ -52,8 +53,18 @@ func TestImageMetaRepository(t *testing.T) {
 		t.Fatal(im.Category, "not in", categories)
 	}
 
-	err = imageMetaRepo.Delete(ctx, im.Category, 0)
+	found, err := imageMetaRepo.Exists(ctx, im.ID)
+	if !found {
+		t.Fatal(found)
+	}
+
+	err = imageMetaRepo.Delete(ctx, im.ID)
 	test.AssertErrNil(t, err)
+
+	found, err = imageMetaRepo.Exists(ctx, im.ID)
+	if found {
+		t.Fatal(found)
+	}
 
 	gotImageMetaList, err = imageMetaRepo.List(ctx, im.Category, pagination)
 	test.AssertErrNil(t, err)
@@ -70,23 +81,21 @@ func TestImageMetaRepository(t *testing.T) {
 
 func mustExistsImageMeta(
 	t *testing.T,
-	imageMetaList []repository.IndexedImageMeta,
+	imageMetaList []imager.RawImageMetaJSON,
 	id string,
 ) {
 	t.Helper()
 
-	var found bool
-	for _, im := range imageMetaList {
-		if im.ID == id {
-			found = true
+	for _, rawIM := range imageMetaList {
+		im, err := rawIM.ImageMeta()
+		test.AssertErrNil(t, err)
 
-			break
+		if im.ID == id {
+			return
 		}
 	}
 
-	if !found {
-		t.Fatal(id, "not in", imageMetaList)
-	}
+	t.Fatal(id, "not in", imageMetaList)
 }
 
 func TestImageMetaRepository_Shuffle(t *testing.T) {
@@ -134,7 +143,7 @@ func TestImageMetaRepository_Shuffle(t *testing.T) {
 
 	var equalCount int
 	for i, im := range initialMeta {
-		if im.ID == shuffledMeta[i].ID {
+		if bytes.Equal(im, shuffledMeta[i]) {
 			equalCount++
 		}
 	}

@@ -10,6 +10,8 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager/core"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 )
 
@@ -22,6 +24,7 @@ type Server struct {
 type Essentials struct {
 	zerolog.Logger
 	*core.Core
+	PromRegistry *prometheus.Registry
 }
 
 // NewServer creates new http server.
@@ -32,9 +35,9 @@ func NewServer(es Essentials, cfg config.Server) (*Server, error) {
 	}
 
 	r := mux.NewRouter()
-	r.NotFoundHandler = http.HandlerFunc(h.NotFoundHandler)
+	r.NotFoundHandler = http.HandlerFunc(h.notFoundHandler)
 
-	mountDebug(r)
+	mountDebug(r, &h, es.PromRegistry)
 	mountSwagger(r)
 
 	r.Use(
@@ -42,6 +45,7 @@ func NewServer(es Essentials, cfg config.Server) (*Server, error) {
 		middlewareServerHeader(cfg.Name),
 		middlewareLogger(es.Logger),
 		middlewareDump,
+		middlewareMetrics(es.PromRegistry),
 		middlewareRecoverPanic,
 	)
 
@@ -71,7 +75,9 @@ func mountSwagger(r *mux.Router) {
 	r.PathPrefix("/swagger/").Handler(h)
 }
 
-func mountDebug(r *mux.Router) {
+func mountDebug(r *mux.Router, h *handlers, promRegistry *prometheus.Registry) {
+	r.Path("/health").Methods(http.MethodGet).HandlerFunc(h.getHealth)
+
 	debugAPI := r.PathPrefix("/debug").Subrouter()
 	debugAPI.HandleFunc("/pprof/", pprof.Index)
 	debugAPI.HandleFunc("/pprof/cmdline", pprof.Cmdline)
@@ -83,6 +89,11 @@ func mountDebug(r *mux.Router) {
 	debugAPI.Handle("/pprof/threadcreate", pprof.Handler("threadcreate"))
 	debugAPI.Handle("/pprof/block", pprof.Handler("block"))
 	debugAPI.Handle("/pprof/allocs", pprof.Handler("allocs"))
+
+	promHandler := promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{
+		Registry: promRegistry,
+	})
+	r.Path("/metrics").Methods(http.MethodGet).Handler(promHandler)
 }
 
 func mountPublicAPI(r *mux.Router, h *handlers, cfg config.Server) {
@@ -114,6 +125,11 @@ func mountInternalAPI(r *mux.Router, h *handlers) {
 		Path("/images").
 		Methods(http.MethodPut).
 		HandlerFunc(h.PutImage)
+
+	internalAPIV1.
+		Path("/images/{image_id}").
+		Methods(http.MethodDelete).
+		HandlerFunc(h.DeleteImage)
 
 	internalAPIV1.
 		Path("/images/shuffle").

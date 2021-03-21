@@ -25,8 +25,10 @@ import (
 	"github.com/google/uuid"
 )
 
-const contentType = "image/jpeg"
-const imageSize imager.ImageSize = "128x128"
+const (
+	contentType                  = "image/jpeg"
+	imageSize   imager.ImageSize = "128x128"
+)
 
 func newTestCore(tb testing.TB) (c *core.Core, close func(tb testing.TB)) {
 	tb.Helper()
@@ -41,8 +43,8 @@ func newTestCore(tb testing.TB) (c *core.Core, close func(tb testing.TB)) {
 	test.AssertErrNil(tb, err)
 
 	c = core.NewCore(core.Essentials{
+		KVP:                 kvp,
 		ImageMetaRepository: imredis.NewImageMetaRepository(kvp),
-		ImageIDRepository:   imredis.NewImageIDRepository(kvp),
 		FileStorage:         s3,
 		Validate:            validate.New(),
 	}, cfg.Core)
@@ -380,13 +382,75 @@ func TestShuffleImages(t *testing.T) {
 	}
 }
 
+func TestDelete(t *testing.T) {
+	c, close := newTestCore(t)
+	defer close(t)
+
+	ctx := context.Background()
+
+	imageBytes := getTestImageBytes(t)
+	im, err := c.UploadImage(ctx, imager.ImageMeta{
+		ID:        "",
+		Author:    "author",
+		WEBSource: "websource",
+		MIMEType:  contentType,
+		Size:      int64(len(imageBytes)),
+		Category:  "test",
+	}, bytes.NewReader(imageBytes))
+	test.AssertErrNil(t, err)
+
+	testCases := []struct {
+		Name      string
+		ID        string
+		ErrTarget interface{}
+	}{{
+		Name:      "ok",
+		ID:        im.ID,
+		ErrTarget: nil,
+	}, {
+		Name:      "not_found",
+		ID:        uuid.NewString(),
+		ErrTarget: &imerrors.NotFoundError{},
+	}, {
+		Name:      "invalid_id",
+		ID:        "",
+		ErrTarget: &imerrors.UserError{},
+	}}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			err := c.DeleteImage(ctx, tc.ID)
+
+			if tc.ErrTarget != nil {
+				if !errors.As(err, tc.ErrTarget) {
+					t.Fatal(err)
+				}
+
+				return
+			}
+
+			test.AssertErrNil(t, err)
+		})
+	}
+}
+
+func TestHealth(t *testing.T) {
+	c, close := newTestCore(t)
+	defer close(t)
+
+	ctx := context.Background()
+	err := c.Health(ctx)
+	test.AssertErrNil(t, err)
+}
+
 func BenchmarkImage(b *testing.B) {
 	// cpu: Intel(R) Core(TM) i5-7300HQ CPU @ 2.50GHz
 	// BenchmarkImage
 	// BenchmarkImage-4             288           4092604 ns/op           28785 B/op        386 allocs/op
 
 	c, close := newTestCore(b)
-	defer close(b)
+	b.Cleanup(func() { close(b) })
 
 	var imageData bytes.Buffer
 	image := imaging.New(1, 1, color.Black)

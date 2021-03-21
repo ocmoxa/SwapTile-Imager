@@ -15,6 +15,7 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
 
 	"github.com/gomodule/redigo/redis"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 )
 
@@ -37,7 +38,11 @@ func Start(ctx context.Context, configFile string) (done chan struct{}) {
 	return done
 }
 
-func runApp(ctx context.Context, l zerolog.Logger, configFile string) (err error) {
+func runApp(
+	ctx context.Context,
+	l zerolog.Logger,
+	configFile string,
+) (err error) {
 	rand.Seed(time.Now().Unix())
 
 	cfg, err := config.Load(configFile)
@@ -63,7 +68,6 @@ func runApp(ctx context.Context, l zerolog.Logger, configFile string) (err error
 	}
 
 	repoImageMeta := imredis.NewImageMetaRepository(kvp)
-	repoImageID := imredis.NewImageIDRepository(kvp)
 
 	fileStorage, err := s3.NewStorage(cfg.S3)
 	if err != nil {
@@ -73,15 +77,22 @@ func runApp(ctx context.Context, l zerolog.Logger, configFile string) (err error
 	validate := validate.New()
 
 	c := core.NewCore(core.Essentials{
+		KVP:                 kvp,
 		ImageMetaRepository: repoImageMeta,
-		ImageIDRepository:   repoImageID,
 		FileStorage:         fileStorage,
 		Validate:            validate,
 	}, cfg.Core)
 
+	promRegistry := prometheus.NewRegistry()
+	err = promRegistry.Register(prometheus.NewGoCollector())
+	if err != nil {
+		return fmt.Errorf("registering go collector: %w", err)
+	}
+
 	srv, err := imhttp.NewServer(imhttp.Essentials{
-		Logger: l,
-		Core:   c,
+		Logger:       l,
+		Core:         c,
+		PromRegistry: promRegistry,
 	}, cfg.Server)
 	if err != nil {
 		return fmt.Errorf("creating server: %w", err)

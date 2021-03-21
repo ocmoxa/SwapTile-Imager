@@ -11,10 +11,21 @@ import (
 )
 
 func main() {
+	const noMigrate = -1
+
 	configFile := flag.String("config", "", "path to config")
+	migrateVersion := flag.Int("migrate-version", noMigrate, "id of migration to run")
 	flag.Parse()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx := context.Background()
+
+	if *migrateVersion != noMigrate {
+		app.Migrate(ctx, *configFile, *migrateVersion)
+
+		return
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
 	done := app.Start(ctx, *configFile)
 
 	go func() {

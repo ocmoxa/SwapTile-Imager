@@ -1,9 +1,13 @@
 package imager_test
 
 import (
+	"bytes"
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
 )
 
 func TestImageSize(t *testing.T) {
@@ -50,4 +54,37 @@ func TestImageSize(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRawImageMetaJSON(t *testing.T) {
+	im := imager.ImageMeta{
+		ID:        "test",
+		Author:    "test_author",
+		WEBSource: "test_websource",
+		MIMEType:  "image/jpeg",
+		Category:  "test_category",
+		Size:      1,
+	}
+
+	rawIM, err := im.RawJSON()
+	test.AssertErrNil(t, err)
+
+	gotIm, err := rawIM.ImageMeta()
+	test.AssertErrNil(t, err)
+	if gotIm.ID != im.ID {
+		t.Fatal("exp", im.ID, "got", gotIm.ID)
+	}
+
+	if !strings.Contains(rawIM.String(), im.ID) {
+		t.Fatal(rawIM.String())
+	}
+
+	gotRawIM, err := json.Marshal(&rawIM)
+	test.AssertErrNil(t, err)
+	if !bytes.Contains(gotRawIM, []byte(im.ID)) {
+		t.Fatal(string(gotRawIM))
+	}
+
+	err = json.Unmarshal(gotRawIM, &rawIM)
+	test.AssertErrNil(t, err)
 }

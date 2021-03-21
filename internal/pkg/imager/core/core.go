@@ -15,6 +15,7 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"github.com/h2non/bimg"
 	"github.com/rs/zerolog"
@@ -24,17 +25,18 @@ import (
 type Core struct {
 	cfg           config.Core
 	repoImageMeta repository.ImageMetaRepository
-	repoImageID   repository.ImageIDRepository
 	fileStorage   storage.FileStorage
 	validate      *validator.Validate
+
+	healthCheckers []imager.Healther
 
 	buffersPool *sync.Pool
 }
 
 // Essentials of the Core.
 type Essentials struct {
+	KVP *redis.Pool
 	repository.ImageMetaRepository
-	repository.ImageIDRepository
 	storage.FileStorage
 	*validator.Validate
 }
@@ -43,7 +45,6 @@ type Essentials struct {
 func NewCore(es Essentials, cfg config.Core) *Core {
 	return &Core{
 		repoImageMeta: es.ImageMetaRepository,
-		repoImageID:   es.ImageIDRepository,
 		fileStorage:   es.FileStorage,
 		validate:      es.Validate,
 		cfg:           cfg,
@@ -51,6 +52,10 @@ func NewCore(es Essentials, cfg config.Core) *Core {
 			New: func() interface{} {
 				return new(bytes.Buffer)
 			},
+		},
+		healthCheckers: []imager.Healther{
+			es.FileStorage,
+			redisHealthChecker{KVP: es.KVP},
 		},
 	}
 }
@@ -92,11 +97,11 @@ func (c Core) UploadImage(
 		return im, imerrors.NewMediaTypeError(err)
 	}
 
-	ok, err := c.repoImageID.Set(ctx, im.ID)
+	found, err := c.repoImageMeta.Exists(ctx, im.ID)
 	switch {
 	case err != nil:
-		return im, fmt.Errorf("saving id: %w", err)
-	case !ok:
+		return im, fmt.Errorf("checking id: %w", err)
+	case found:
 		return im, imerrors.NewConflictError(imerrors.Error("id already found"))
 	}
 
@@ -122,6 +127,34 @@ func (c Core) UploadImage(
 	}
 
 	return im, nil
+}
+
+func (c Core) DeleteImage(ctx context.Context, id string) (err error) {
+	if err = c.validate.Var(id, "image_id"); err != nil {
+		err = fmt.Errorf("validating image_id: %w", err)
+
+		return imerrors.NewUserError(err)
+	}
+
+	found, err := c.repoImageMeta.Exists(ctx, id)
+	switch {
+	case err != nil:
+		return fmt.Errorf("exists: %w", err)
+	case !found:
+		return imerrors.NewNotFoundError(imerrors.Error("image not found"))
+	}
+
+	err = c.fileStorage.Delete(ctx, id)
+	if err != nil {
+		return fmt.Errorf("deleting image from file storage: %w", err)
+	}
+
+	err = c.repoImageMeta.Delete(ctx, id)
+	if err != nil {
+		return fmt.Errorf("deleting image from database: %w", err)
+	}
+
+	return nil
 }
 
 // GetImage downloads image, resizes it and returns its body.
@@ -214,7 +247,7 @@ func (c Core) ListImages(
 	ctx context.Context,
 	category string,
 	pagination repository.Pagination,
-) (im []repository.IndexedImageMeta, err error) {
+) (im []imager.RawImageMetaJSON, err error) {
 	if err = c.validate.Var(category, "category"); err != nil {
 		err = fmt.Errorf("validating category: %w", err)
 
@@ -228,4 +261,15 @@ func (c Core) ListImages(
 	}
 
 	return c.repoImageMeta.List(ctx, category, pagination)
+}
+
+func (c Core) Health(ctx context.Context) (err error) {
+	for _, h := range c.healthCheckers {
+		err = h.Health(ctx)
+		if err != nil {
+			return fmt.Errorf("health: %w", err)
+		}
+	}
+
+	return nil
 }

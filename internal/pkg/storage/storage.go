@@ -15,6 +15,8 @@ type FileStorage interface {
 	Upload(ctx context.Context, im imager.ImageMeta, r io.Reader) (err error)
 	// Delete image in the storage.
 	Delete(ctx context.Context, id string) (err error)
+
+	imager.Healther
 }
 
 // File is an image from the storage. It stores content type. The file

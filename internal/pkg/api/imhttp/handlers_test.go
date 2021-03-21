@@ -22,6 +22,7 @@ import (
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/validate"
 
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 )
 
@@ -123,6 +124,25 @@ func TestServer(t *testing.T) {
 			)
 		},
 		ExpStatus: http.StatusOK,
+	}, {
+		Request: func() *http.Request {
+			return httptest.NewRequest(
+				http.MethodDelete,
+				"/internal/api/v1/images/"+imageID,
+				nil,
+			)
+		},
+		ExpStatus: http.StatusOK,
+	}, {
+		Request: func() *http.Request {
+			return httptest.NewRequest(http.MethodGet, "/health", nil)
+		},
+		ExpStatus: http.StatusOK,
+	}, {
+		Request: func() *http.Request {
+			return httptest.NewRequest(http.MethodGet, "/not-found", nil)
+		},
+		ExpStatus: http.StatusNotFound,
 	}}
 
 	cfg := test.LoadConfig(t)
@@ -137,16 +157,17 @@ func TestServer(t *testing.T) {
 	test.AssertErrNil(t, err)
 
 	c := core.NewCore(core.Essentials{
+		KVP:                 kvp,
 		ImageMetaRepository: imredis.NewImageMetaRepository(kvp),
-		ImageIDRepository:   imredis.NewImageIDRepository(kvp),
 		FileStorage:         s3,
 		Validate:            validate.New(),
 	}, cfg.Core)
 
 	s, err := imhttp.NewServer(
 		imhttp.Essentials{
-			Logger: zerolog.New(os.Stdout),
-			Core:   c,
+			Logger:       zerolog.New(os.Stdout),
+			Core:         c,
+			PromRegistry: prometheus.NewRegistry(),
 		},
 		cfg.Server,
 	)

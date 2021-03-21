@@ -8,15 +8,13 @@ import (
 	"strings"
 
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager"
-	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imager/improto"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/imerrors"
 	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/repository"
 
 	"github.com/gomodule/redigo/redis"
-	"google.golang.org/protobuf/proto"
 )
 
-// CategoryNameAll is a name of category with all images.
+// CategoryNameAll is a special name of category that contains all images.
 const CategoryNameAll = "all"
 
 // ImageMetaRepository implements storage.ImageMetaRepository.
@@ -32,8 +30,8 @@ func NewImageMetaRepository(kvp *redis.Pool) *ImageMetaRepository {
 	}
 }
 
-func (r ImageMetaRepository) key(category string) string {
-	return keyPrefixImageMeta + category
+func (r ImageMetaRepository) keyImageID(category string) string {
+	return keyPrefixImageID + category
 }
 
 // List of image meta.
@@ -41,36 +39,63 @@ func (r ImageMetaRepository) List(
 	ctx context.Context,
 	category string,
 	pagination repository.Pagination,
-) (im []repository.IndexedImageMeta, err error) {
+) (im []imager.RawImageMetaJSON, err error) {
 	kv := r.kvp.Get()
 	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
 
-	imStrs, err := redis.ByteSlices(kv.Do(
+	imageIDs, err := redis.Strings(kv.Do(
 		"LRANGE",
-		r.key(category),
+		r.keyImageID(category),
 		pagination.Offset,                    // Start, inclusive.
 		pagination.Offset+pagination.Limit-1, // Stop, inclusive.
 	))
-	if err != nil {
+	switch {
+	case err != nil:
 		return nil, fmt.Errorf("doing lrange: %w", err)
+	case len(imageIDs) == 0:
+		return nil, nil
 	}
 
-	im = make([]repository.IndexedImageMeta, len(imStrs))
-	for i, imData := range imStrs {
-		imProto := &improto.ImageMeta{}
+	metaArgs := make([]interface{}, 0, len(imageIDs)+1)
+	metaArgs = append(metaArgs, keyImageMeta)
+	for _, imgID := range imageIDs {
+		metaArgs = append(metaArgs, imgID)
+	}
 
-		if err = proto.Unmarshal(imData, imProto); err != nil {
-			return nil, fmt.Errorf("unmarshalling text: %w", err)
-		}
+	imBytes, err := redis.ByteSlices(kv.Do(
+		"HMGET",
+		metaArgs...,
+	))
+	if err != nil {
+		return nil, fmt.Errorf("doing hmget: %w", err)
+	}
 
-		im[i] = repository.IndexedImageMeta{
-			Index:     i + pagination.Offset,
-			ImageMeta: improto.FromImageMeta(imProto),
-		}
-		im[i].Category = category
+	im = make([]imager.RawImageMetaJSON, len(imBytes))
+	for i, v := range imBytes {
+		im[i] = v
 	}
 
 	return im, nil
+}
+
+// Exists checks that image meta found.
+func (r ImageMetaRepository) Exists(
+	ctx context.Context,
+	imageID string,
+) (found bool, err error) {
+	kv := r.kvp.Get()
+	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
+
+	found, err = redis.Bool(kv.Do(
+		"HEXISTS",
+		keyImageMeta,
+		imageID,
+	))
+	if err != nil {
+		return false, fmt.Errorf("doing hexists: %w", err)
+	}
+
+	return found, nil
 }
 
 // Insert an image metadata.
@@ -81,23 +106,27 @@ func (r ImageMetaRepository) Insert(
 	kv := r.kvp.Get()
 	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
 
-	imProto := improto.ToImageMetaProto(im)
-
-	imData, err := proto.Marshal(imProto)
+	imData, err := im.RawJSON()
 	if err != nil {
-		return fmt.Errorf("marshalling text: %w", err)
+		return fmt.Errorf("encoding image meta: %w", err)
 	}
 
 	p := newPipeline(kv)
 	p.Send("MULTI")
 	p.Send(
 		"RPUSH",
-		r.key(im.Category),
-		imData, // Element.
+		r.keyImageID(im.Category),
+		im.ID, // Element.
 	)
 	p.Send(
 		"RPUSH",
-		r.key(CategoryNameAll),
+		r.keyImageID(CategoryNameAll),
+		im.ID, // Element.
+	)
+	p.Send(
+		"HSET",
+		keyImageMeta,
+		im.ID,
 		imData, // Element.
 	)
 	_, err = p.Do("EXEC")
@@ -111,37 +140,43 @@ func (r ImageMetaRepository) Insert(
 // Delete an image metadata by index in the category.
 func (r ImageMetaRepository) Delete(
 	ctx context.Context,
-	category string,
-	index int,
+	imageID string,
 ) (err error) {
 	kv := r.kvp.Get()
 	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
 
-	element, err := redis.Bytes(kv.Do(
-		"LINDEX",
-		r.key(category),
-		index,
+	rawIM, err := redis.Bytes(kv.Do(
+		"HGET",
+		keyImageMeta,
+		imageID,
 	))
-	switch {
-	case err != nil:
-		return fmt.Errorf("doing lindex: %w", err)
-	case errors.Is(err, redis.ErrNil):
-		return nil
+	if err != nil {
+		return fmt.Errorf("doing hget: %w", err)
+	}
+
+	im, err := imager.RawImageMetaJSON(rawIM).ImageMeta()
+	if err != nil {
+		return fmt.Errorf("decoding image meta: %w", err)
 	}
 
 	p := newPipeline(kv)
 	p.Send("MULTI")
 	p.Send(
 		"LREM",
-		r.key(category),
+		r.keyImageID(im.Category),
 		0, // Count. Remove all elements equal to element.
-		element,
+		imageID,
 	)
 	p.Send(
 		"LREM",
-		r.key(CategoryNameAll),
+		r.keyImageID(CategoryNameAll),
 		0, // Count. Remove all elements equal to element.
-		element,
+		imageID,
+	)
+	p.Send(
+		"HDEL",
+		keyImageMeta,
+		imageID,
 	)
 	_, err = p.Do("EXEC")
 	if err != nil {
@@ -160,7 +195,7 @@ func (r ImageMetaRepository) Shuffle(
 	kv := r.kvp.Get()
 	defer func() { err = imerrors.ErrorPair(err, kv.Close()) }()
 
-	key := r.key(category)
+	key := r.keyImageID(category)
 
 	count, err := redis.Int(kv.Do("LLEN", key))
 	switch {
@@ -174,7 +209,7 @@ func (r ImageMetaRepository) Shuffle(
 		// nolint: gosec // It requires speed.
 		elementIndex := rand.Intn(count)
 
-		element, err := redis.Bytes(kv.Do(
+		imageID, err := redis.Bytes(kv.Do(
 			"LINDEX",
 			key,
 			elementIndex,
@@ -194,12 +229,12 @@ func (r ImageMetaRepository) Shuffle(
 			"LREM",
 			key,
 			1, // Count. Remove 1 element equal to element moving from head to tail.
-			element,
+			imageID,
 		)
 		p.Send(
 			"RPUSH",
 			key,
-			element,
+			imageID,
 		)
 		_, err = p.Do("EXEC")
 		if err != nil {
@@ -221,13 +256,13 @@ func (r ImageMetaRepository) Categories(
 	// It is assumed that there will be few categories, up to 100.
 	// Warning: KEYS can block Redis for a significant amount of time
 	// if the number of categories becomes large.
-	categories, err = redis.Strings(kv.Do("KEYS", keyPrefixImageMeta+"*"))
+	categories, err = redis.Strings(kv.Do("KEYS", r.keyImageID("*")))
 	if err != nil {
 		return nil, fmt.Errorf("doing keys: %w", err)
 	}
 
 	for i, c := range categories {
-		categories[i] = strings.TrimPrefix(c, keyPrefixImageMeta)
+		categories[i] = strings.TrimPrefix(c, keyPrefixImageID)
 	}
 
 	return categories, nil
