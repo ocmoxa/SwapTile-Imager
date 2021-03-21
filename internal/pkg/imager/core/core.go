@@ -129,6 +129,7 @@ func (c Core) UploadImage(
 	return im, nil
 }
 
+// Delete image from a database and a storage.
 func (c Core) DeleteImage(ctx context.Context, id string) (err error) {
 	if err = c.validate.Var(id, "image_id"); err != nil {
 		err = fmt.Errorf("validating image_id: %w", err)
@@ -263,6 +264,7 @@ func (c Core) ListImages(
 	return c.repoImageMeta.List(ctx, category, pagination)
 }
 
+// Health checks health of Redis and S3.
 func (c Core) Health(ctx context.Context) (err error) {
 	for _, h := range c.healthCheckers {
 		err = h.Health(ctx)

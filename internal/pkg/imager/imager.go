@@ -25,6 +25,7 @@ type ImageMeta struct {
 	Size int64 `json:"-" validate:"required,gt=0"`
 }
 
+// RawJSON converts ImageMeta to raw json representation.
 func (im ImageMeta) RawJSON() (RawImageMetaJSON, error) {
 	return json.Marshal(&im)
 }
@@ -38,7 +39,7 @@ func (rawIM *RawImageMetaJSON) MarshalJSON() ([]byte, error) {
 	return []byte(*rawIM), nil
 }
 
-// MarshalJSON implements JSON marshaller.
+// UnmarshalJSON implements JSON marshaller.
 func (rawIM *RawImageMetaJSON) UnmarshalJSON(data []byte) error {
 	*rawIM = make(RawImageMetaJSON, len(data))
 	copy(*rawIM, data)

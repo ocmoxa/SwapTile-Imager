@@ -54,6 +54,7 @@ func TestImageMetaRepository(t *testing.T) {
 	}
 
 	found, err := imageMetaRepo.Exists(ctx, im.ID)
+	test.AssertErrNil(t, err)
 	if !found {
 		t.Fatal(found)
 	}
@@ -62,6 +63,7 @@ func TestImageMetaRepository(t *testing.T) {
 	test.AssertErrNil(t, err)
 
 	found, err = imageMetaRepo.Exists(ctx, im.ID)
+	test.AssertErrNil(t, err)
 	if found {
 		t.Fatal(found)
 	}
