@@ -2,6 +2,9 @@
 package imager
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -17,9 +20,44 @@ type ImageMeta struct {
 	// MIMEType is an image media type.
 	MIMEType string `json:"mimetype" validate:"required"`
 	// Category of the image.
-	Category string `json:"category" validate:"required,category"`
+	Category string `json:"category" validate:"required,category,ne=all"`
 	// Size of file in bytes.
 	Size int64 `json:"-" validate:"required,gt=0"`
+}
+
+func (im ImageMeta) RawJSON() (RawImageMetaJSON, error) {
+	return json.Marshal(&im)
+}
+
+// RawImageMetaJSON holds JSON meta information about image meta. It is
+// not decoded.
+type RawImageMetaJSON []byte
+
+// MarshalJSON implements JSON marshaller.
+func (rawIM *RawImageMetaJSON) MarshalJSON() ([]byte, error) {
+	return []byte(*rawIM), nil
+}
+
+// MarshalJSON implements JSON marshaller.
+func (rawIM *RawImageMetaJSON) UnmarshalJSON(data []byte) error {
+	*rawIM = make(RawImageMetaJSON, len(data))
+	copy(*rawIM, data)
+
+	return nil
+}
+
+// ImageMeta decodes raw image meta details into ImageMeta.
+func (rawIM RawImageMetaJSON) ImageMeta() (im ImageMeta, err error) {
+	if err = json.Unmarshal(rawIM, &im); err != nil {
+		return ImageMeta{}, fmt.Errorf("decoding json meta: %w", err)
+	}
+
+	return im, nil
+}
+
+// String implements Stringer interface.
+func (rawIM RawImageMetaJSON) String() string {
+	return string(rawIM)
 }
 
 // ImageSize is a size defined as a string: WIDTHxHEIGHT.
@@ -53,4 +91,10 @@ func (is ImageSize) Size() (width int, height int) {
 	}
 
 	return width, height
+}
+
+// Healther checks component status.
+type Healther interface {
+	// Healther checks component status.
+	Health(ctx context.Context) (err error)
 }

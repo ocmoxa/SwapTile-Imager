@@ -59,3 +59,14 @@ func TestStorage(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestStorage_Health(t *testing.T) {
+	s, err := s3.NewStorage(test.LoadConfig(t).S3)
+	test.AssertErrNil(t, err)
+
+	var storage imager.Healther = s
+
+	ctx := context.Background()
+	err = storage.Health(ctx)
+	test.AssertErrNil(t, err)
+}

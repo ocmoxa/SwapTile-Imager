@@ -3,7 +3,7 @@ language: go
 dist: focal
 
 go:
-- "1.16"
+- "1.16.2"
 
 services:
 - docker

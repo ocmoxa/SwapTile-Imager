@@ -10,6 +10,15 @@ run:
 	go run $(CMD)
 .PHONY: run
 
+run.migrate:
+ifeq ($(VERSION),)
+	@echo "\033[0;31mNo version specified\033[0m"
+	@echo "Usage: make run.migrate VERSION=#"
+	@exit 1
+endif
+	go run $(CMD) -migrate-version $(VERSION)
+.PHONY: run.migrate
+
 build:
 	go build -o ./bin/imager $(CMD)
 .PHONY: build
@@ -37,10 +46,6 @@ test.integration:
 test.becnhmark:
 	go test -test.run="^$$" -test.bench=. -tags=integration,!integration ${TEST_PKGS}
 .PHONY: test.becnhmark
-
-proto:
-	protoc --go_out=internal/pkg/imager/improto proto/improto.proto
-.PHONY: proto
 
 vendor:
 	go mod tidy

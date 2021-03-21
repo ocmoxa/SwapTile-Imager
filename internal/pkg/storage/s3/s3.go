@@ -50,6 +50,19 @@ func NewStorage(cfg config.S3) (*Storage, error) {
 	}, nil
 }
 
+// Health checks that bucket found.
+func (s Storage) Health(ctx context.Context) (err error) {
+	ok, err := s.client.BucketExists(s.cfg.Bucket)
+	switch {
+	case err != nil:
+		return fmt.Errorf("s3: checking bucket: %w", err)
+	case !ok:
+		return imerrors.NewNotFoundError(imerrors.Error("s3: bucket not found"))
+	default:
+		return nil
+	}
+}
+
 // Get an image by ID from S3.
 func (s Storage) Get(
 	ctx context.Context,

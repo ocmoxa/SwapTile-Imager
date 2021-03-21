@@ -167,6 +167,20 @@ func (h *handlers) PutImage(w http.ResponseWriter, r *http.Request) {
 	h.repondJSON(ctx, w, im)
 }
 
+func (h *handlers) DeleteImage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	imageID := mux.Vars(r)["image_id"]
+
+	if err := h.core.DeleteImage(ctx, imageID); err != nil {
+		h.respondErr(ctx, w, err)
+
+		return
+	}
+
+	h.repondJSON(ctx, w, "ok")
+}
+
 func (h *handlers) PostShuffle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -245,7 +259,19 @@ func (h *handlers) respondErr(ctx context.Context, w http.ResponseWriter, err er
 	}
 }
 
-func (h *handlers) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) getHealth(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	if err := h.core.Health(ctx); err != nil {
+		h.respondErr(ctx, w, err)
+
+		return
+	}
+
+	h.repondJSON(ctx, w, "ok")
+}
+
+func (h *handlers) notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	const errNotFound imerrors.Error = "not found"
 	h.respondErr(r.Context(), w, imerrors.NewNotFoundError(errNotFound))
 }

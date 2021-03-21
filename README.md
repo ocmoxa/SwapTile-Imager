@@ -20,7 +20,7 @@ See [./config.example.jsonc](./config.example.jsonc).
 
 # Requirnments
 
-* Go 1.16
+* Go 1.16.2
 * libvips-dev
 
 # Documentation

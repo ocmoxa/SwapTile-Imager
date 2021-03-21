@@ -4,9 +4,8 @@ package imredis
 import "github.com/gomodule/redigo/redis"
 
 const (
-	keyPrefixImageMeta = "ocmoxa:image_meta:"
-
-	keyImageID = "ocmoxa:image_id"
+	keyImageMeta     = "ocmoxa:image_meta"
+	keyPrefixImageID = "ocmoxa:image_id:"
 )
 
 // pipeline helps to handle send error.

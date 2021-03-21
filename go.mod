@@ -15,8 +15,8 @@ require (
 	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/prometheus/client_golang v1.10.0
 	github.com/rs/zerolog v1.20.0
-	github.com/smartystreets/goconvey v1.6.4 // indirect
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/ini.v1 v1.62.0 // indirect
 )

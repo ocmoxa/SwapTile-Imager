@@ -8,6 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ocmoxa/SwapTile-Imager/internal/pkg/test"
+
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 )
 
@@ -118,5 +121,35 @@ func TestMiddlewareCacheControl_NoCache(t *testing.T) {
 
 	if w.Header().Get(headerCacheControl) != expCacheControl {
 		t.Fatal("exp", expCacheControl, "got", w.Header().Get(headerCacheControl))
+	}
+}
+
+func TestMiddlewareMetrics(t *testing.T) {
+	const expMetricName = "swaptile_imager_http_duration"
+
+	registry := prometheus.NewRegistry()
+
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+
+	h := http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {})
+	h = middlewareMetrics(registry)(h).ServeHTTP
+
+	h(w, r)
+
+	metrics, err := registry.Gather()
+	test.AssertErrNil(t, err)
+
+	var found bool
+	for _, m := range metrics {
+		if m.Name != nil && *m.Name == expMetricName {
+			found = true
+
+			break
+		}
+	}
+
+	if !found {
+		t.Fatal(expMetricName, "not found")
 	}
 }

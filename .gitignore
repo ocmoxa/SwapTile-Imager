@@ -2,6 +2,7 @@
 /data
 docker-compose.production.yml
 .vscode
+coverage.out
 
 # Binaries for programs and plugins
 *.exe
