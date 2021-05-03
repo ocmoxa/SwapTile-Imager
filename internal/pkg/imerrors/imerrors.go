@@ -52,15 +52,28 @@ func NewNotFoundError(err error) error {
 	}
 }
 
-// UserError means that given err is about bad request or invalid
-// argument.
-type UserError struct {
+// UnprocessableEntity means that given err is about invalid argument.
+type UnprocessableEntity struct {
 	WrappedError
 }
 
-// NewUserError wraps err and creates UserError.
-func NewUserError(err error) error {
-	return UserError{
+// NewUnprocessableEntity wraps err and creates UnprocessableEntity.
+func NewUnprocessableEntity(err error) error {
+	return UnprocessableEntity{
+		WrappedError: WrappedError{
+			Err: err,
+		},
+	}
+}
+
+// BadRequestError means that given err is about bad request.
+type BadRequestError struct {
+	WrappedError
+}
+
+// NewBadRequestError wraps err and creates BadRequestError.
+func NewBadRequestError(err error) error {
+	return BadRequestError{
 		WrappedError: WrappedError{
 			Err: err,
 		},

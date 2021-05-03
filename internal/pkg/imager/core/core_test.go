@@ -81,23 +81,23 @@ func TestUploadImage(t *testing.T) {
 	}, {
 		Name:      "size_zero",
 		Meta:      func(im *imager.ImageMeta) { im.Size = 0 },
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}, {
 		Name:      "size_negative",
 		Meta:      func(im *imager.ImageMeta) { im.Size = -1 },
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}, {
 		Name:      "no_author",
 		Meta:      func(im *imager.ImageMeta) { im.Author = "" },
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}, {
 		Name:      "no_websource",
 		Meta:      func(im *imager.ImageMeta) { im.WEBSource = "" },
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}, {
 		Name:      "no_mimetype",
 		Meta:      func(im *imager.ImageMeta) { im.MIMEType = "" },
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}, {
 		Name:      "invalid_mimetype",
 		Meta:      func(im *imager.ImageMeta) { im.MIMEType = "invalid/mime" },
@@ -105,7 +105,7 @@ func TestUploadImage(t *testing.T) {
 	}, {
 		Name:      "no_category",
 		Meta:      func(im *imager.ImageMeta) { im.Category = "" },
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}}
 
 	c, close := newTestCore(t)
@@ -161,12 +161,12 @@ func TestGetImage(t *testing.T) {
 		Name:      "invalid_image_size",
 		ID:        imageID,
 		Size:      imager.ImageSize("1x0"),
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}, {
 		Name:      "invalid_image_id",
 		ID:        string([]byte{0, 1, 2}),
 		Size:      imageSize,
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}}
 
 	c, close := newTestCore(t)
@@ -275,19 +275,19 @@ func TestListImages(t *testing.T) {
 		Category:   "",
 		Pagination: repository.Pagination{Limit: 1, Offset: 0},
 		ExpCount:   0,
-		ErrTarget:  &imerrors.UserError{},
+		ErrTarget:  &imerrors.UnprocessableEntity{},
 	}, {
 		Name:       "invalid_limit",
 		Category:   category,
 		Pagination: repository.Pagination{Limit: -1, Offset: 0},
 		ExpCount:   0,
-		ErrTarget:  &imerrors.UserError{},
+		ErrTarget:  &imerrors.UnprocessableEntity{},
 	}, {
 		Name:       "invalid_offset",
 		Category:   category,
 		Pagination: repository.Pagination{Limit: 1, Offset: -1},
 		ExpCount:   0,
-		ErrTarget:  &imerrors.UserError{},
+		ErrTarget:  &imerrors.UnprocessableEntity{},
 	}}
 
 	c, close := newTestCore(t)
@@ -346,17 +346,17 @@ func TestShuffleImages(t *testing.T) {
 		Name:      "empty_category",
 		Category:  "",
 		Depth:     okDepth,
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}, {
 		Name:      "zero_depth",
 		Category:  okCategory,
 		Depth:     0,
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}, {
 		Name:      "depth_out_of_range",
 		Category:  okCategory,
 		Depth:     1001,
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}}
 
 	c, close := newTestCore(t)
@@ -414,7 +414,7 @@ func TestDelete(t *testing.T) {
 	}, {
 		Name:      "invalid_id",
 		ID:        "",
-		ErrTarget: &imerrors.UserError{},
+		ErrTarget: &imerrors.UnprocessableEntity{},
 	}}
 
 	for _, tc := range testCases {

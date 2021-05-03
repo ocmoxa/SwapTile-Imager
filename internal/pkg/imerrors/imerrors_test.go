@@ -40,8 +40,8 @@ func TestSubWrappedErrors(t *testing.T) {
 		Err error
 		Exp interface{}
 	}{{
-		Err: imerrors.NewUserError(errOriginal),
-		Exp: &imerrors.UserError{},
+		Err: imerrors.NewUnprocessableEntity(errOriginal),
+		Exp: &imerrors.UnprocessableEntity{},
 	}, {
 		Err: imerrors.NewMediaTypeError(errOriginal),
 		Exp: &imerrors.MediaTypeError{},
@@ -54,6 +54,9 @@ func TestSubWrappedErrors(t *testing.T) {
 	}, {
 		Err: imerrors.NewConflictError(errOriginal),
 		Exp: &imerrors.ConflictError{},
+	}, {
+		Err: imerrors.NewBadRequestError(errOriginal),
+		Exp: &imerrors.BadRequestError{},
 	}}
 
 	for _, tc := range testCases {

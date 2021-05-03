@@ -46,7 +46,7 @@ func (h *handlers) ListImages(w http.ResponseWriter, r *http.Request) {
 		limit, err = strconv.Atoi(limitStr)
 		if err != nil {
 			err = fmt.Errorf("limit: %w", err)
-			h.respondErr(ctx, w, imerrors.NewUserError(err))
+			h.respondErr(ctx, w, imerrors.NewBadRequestError(err))
 
 			return
 		}
@@ -58,7 +58,7 @@ func (h *handlers) ListImages(w http.ResponseWriter, r *http.Request) {
 		offset, err = strconv.Atoi(offsetStr)
 		if err != nil {
 			err = fmt.Errorf("offset: %w", err)
-			h.respondErr(ctx, w, imerrors.NewUserError(err))
+			h.respondErr(ctx, w, imerrors.NewBadRequestError(err))
 
 			return
 		}
@@ -74,7 +74,7 @@ func (h *handlers) ListImages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.repondJSON(ctx, w, images)
+	h.respondJSON(ctx, w, images)
 }
 
 func (h *handlers) ListCategories(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +87,7 @@ func (h *handlers) ListCategories(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.repondJSON(ctx, w, categories)
+	h.respondJSON(ctx, w, categories)
 }
 
 func (h *handlers) GetImage(w http.ResponseWriter, r *http.Request) {
@@ -128,7 +128,7 @@ func (h *handlers) PutImage(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		err = fmt.Errorf("form: %w", err)
-		h.respondErr(ctx, w, imerrors.NewUserError(err))
+		h.respondErr(ctx, w, imerrors.NewBadRequestError(err))
 
 		return
 	}
@@ -136,7 +136,7 @@ func (h *handlers) PutImage(w http.ResponseWriter, r *http.Request) {
 	file, fileHeader, err := r.FormFile("image")
 	if err != nil {
 		err = fmt.Errorf("image: %w", err)
-		h.respondErr(ctx, w, imerrors.NewUserError(err))
+		h.respondErr(ctx, w, imerrors.NewBadRequestError(err))
 
 		return
 	}
@@ -164,7 +164,7 @@ func (h *handlers) PutImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.repondJSON(ctx, w, im)
+	h.respondJSON(ctx, w, im)
 }
 
 func (h *handlers) DeleteImage(w http.ResponseWriter, r *http.Request) {
@@ -178,7 +178,7 @@ func (h *handlers) DeleteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.repondJSON(ctx, w, "ok")
+	h.respondJSON(ctx, w, "ok")
 }
 
 func (h *handlers) PostShuffle(w http.ResponseWriter, r *http.Request) {
@@ -191,7 +191,7 @@ func (h *handlers) PostShuffle(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
-		h.respondErr(ctx, w, imerrors.NewUserError(err))
+		h.respondErr(ctx, w, imerrors.NewBadRequestError(err))
 
 		return
 	}
@@ -203,10 +203,10 @@ func (h *handlers) PostShuffle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.repondJSON(ctx, w, "ok")
+	h.respondJSON(ctx, w, "ok")
 }
 
-func (h *handlers) repondJSON(ctx context.Context, w http.ResponseWriter, data interface{}) {
+func (h *handlers) respondJSON(ctx context.Context, w http.ResponseWriter, data interface{}) {
 	w.Header().Set(headerContentType, contentTypeJSON)
 
 	w.WriteHeader(http.StatusOK)
@@ -234,7 +234,9 @@ func (h *handlers) respondErr(ctx context.Context, w http.ResponseWriter, err er
 		status = http.StatusNotFound
 	case errors.As(err, &imerrors.ConflictError{}):
 		status = http.StatusConflict
-	case errors.As(err, &imerrors.UserError{}):
+	case errors.As(err, &imerrors.UnprocessableEntity{}):
+		status = http.StatusUnprocessableEntity
+	case errors.As(err, &imerrors.BadRequestError{}):
 		status = http.StatusBadRequest
 	case errors.As(err, &imerrors.MediaTypeError{}):
 		status = http.StatusUnsupportedMediaType
@@ -268,7 +270,7 @@ func (h *handlers) getHealth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.repondJSON(ctx, w, "ok")
+	h.respondJSON(ctx, w, "ok")
 }
 
 func (h *handlers) notFoundHandler(w http.ResponseWriter, r *http.Request) {

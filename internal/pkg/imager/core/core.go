@@ -87,7 +87,7 @@ func (c Core) UploadImage(
 	if err = c.validate.Struct(&im); err != nil {
 		err = fmt.Errorf("validating image meta: %w", err)
 
-		return im, imerrors.NewUserError(err)
+		return im, imerrors.NewUnprocessableEntity(err)
 	}
 
 	err = validate.ContentType(im.MIMEType, c.cfg.ImageContentTypes)
@@ -134,7 +134,7 @@ func (c Core) DeleteImage(ctx context.Context, id string) (err error) {
 	if err = c.validate.Var(id, "image_id"); err != nil {
 		err = fmt.Errorf("validating image_id: %w", err)
 
-		return imerrors.NewUserError(err)
+		return imerrors.NewUnprocessableEntity(err)
 	}
 
 	found, err := c.repoImageMeta.Exists(ctx, id)
@@ -177,13 +177,13 @@ func (c Core) GetImage(
 	if err != nil {
 		err = fmt.Errorf("size: %w", err)
 
-		return storage.File{}, imerrors.NewUserError(err)
+		return storage.File{}, imerrors.NewUnprocessableEntity(err)
 	}
 
 	if err = c.validate.Var(id, "image_id"); err != nil {
 		err = fmt.Errorf("validating image_id: %w", err)
 
-		return storage.File{}, imerrors.NewUserError(err)
+		return storage.File{}, imerrors.NewUnprocessableEntity(err)
 	}
 
 	f, err = c.fileStorage.Get(ctx, id)
@@ -231,13 +231,13 @@ func (c Core) ShuffleImages(
 	if err = c.validate.Var(category, "category"); err != nil {
 		err = fmt.Errorf("validating category: %w", err)
 
-		return imerrors.NewUserError(err)
+		return imerrors.NewUnprocessableEntity(err)
 	}
 
 	if err = c.validate.Var(depth, "min=1,max=1000"); err != nil {
 		err = fmt.Errorf("validating depth: %w", err)
 
-		return imerrors.NewUserError(err)
+		return imerrors.NewUnprocessableEntity(err)
 	}
 
 	return c.repoImageMeta.Shuffle(ctx, category, depth)
@@ -252,13 +252,13 @@ func (c Core) ListImages(
 	if err = c.validate.Var(category, "category"); err != nil {
 		err = fmt.Errorf("validating category: %w", err)
 
-		return nil, imerrors.NewUserError(err)
+		return nil, imerrors.NewUnprocessableEntity(err)
 	}
 
 	if err = c.validate.Struct(&pagination); err != nil {
 		err = fmt.Errorf("validating pagination: %w", err)
 
-		return nil, imerrors.NewUserError(err)
+		return nil, imerrors.NewUnprocessableEntity(err)
 	}
 
 	return c.repoImageMeta.List(ctx, category, pagination)
